@@ -1,0 +1,26 @@
+{
+  "humanName": "Postwoman Proxy",
+  "name": "postwoman-proxy",
+  "version": "1.0.0",
+  "description": "A simple proxy server for the Postwoman application.",
+  "main": "main.ts",
+  "dependencies": {
+    "axios": "^0.19.0",
+    "express": "^4.17.1",
+    "ts-node": "^8.4.1",
+    "typescript": "^3.6.4"
+  },
+  "devDependencies": {
+    "@types/body-parser": "^1.17.1",
+    "@types/express": "^4.17.1",
+    "nodemon": "^1.19.4"
+  },
+  "scripts": {
+    "start-ts": "ts-node main.ts",
+    "start": "node main.js",
+    "build": "tsc",
+    "dev": "nodemon"
+  },
+  "author": "NBTX",
+  "license": "MIT"
+}
