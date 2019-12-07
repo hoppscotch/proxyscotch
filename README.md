@@ -14,21 +14,15 @@ A simple proxy server created for [Postwoman](https://github.com/liyasthomas/pos
 ## Demo 🚀
 [https://postwoman.io](https://postwoman.io)
 
-## Usage 💡
-1. [Clone this repo](https://help.github.com/en/articles/cloning-a-repository) with git.
-2. Install dependencies by running `npm install` within the directory that you cloned (probably `postwoman-proxy`).
-3. Compile the TypeScript code with `npm run build`.
-4. Start the production server with `npm start`.
+## Building
+*These build scripts are for macOS/Linux systems. Currently, Windows build scripts have not yet been created.*
 
-#### Or with [pm2](https://pm2.io/):
-1. [Clone this repo](https://help.github.com/en/articles/cloning-a-repository) with git.
-2. Install dependencies by running `npm install` within the directory that you cloned (probably `postwoman-proxy`).
-3. Compile the TypeScript code with `npm run build`.
-4. Start the pm2 process with `pm2 start`.
+- For *NIX (Linux/macOS) systems:
+```bash
+$ ./build.sh unix
+```
 
-## Developing 👷
-
-1. [Clone this repo](https://help.github.com/en/articles/cloning-a-repository) with git.
-2. Install dependencies by running `npm install` within the directory that you cloned (probably `postwoman-proxy`).
-3. Start the development server with `npm run dev`.
-4. Set the proxy URL in Postwoman to the URL that is logged when you run the proxy.
+- For Windows systems:
+```bash
+$ ./build.sh win32
+```
