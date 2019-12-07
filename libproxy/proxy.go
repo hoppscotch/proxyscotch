@@ -33,9 +33,9 @@ type Response struct {
     Headers map[string]string   `json:"headers"`;
 }
 
-func Initialize(initialAccessToken string, proxyURL string, onStatusChange statusChangeFunction, withSSL bool) {
+func Initialize(initialAccessToken string, proxyURL string, onStatusChange statusChangeFunction, withSSL bool, finished chan bool) {
     accessToken = initialAccessToken;
-    fmt.Println("Starting proxy server...");
+    log.Println("Starting proxy server...");
 
     http.HandleFunc("/", proxyHandler);
 
@@ -44,12 +44,13 @@ func Initialize(initialAccessToken string, proxyURL string, onStatusChange statu
             httpServerError := http.ListenAndServe(proxyURL, nil);
 
             if httpServerError != nil {
-                onStatusChange("An error occurred.", false);
+                onStatusChange("An error occurred: " + httpServerError.Error(), false);
             }
+
+            finished <- true;
         }();
 
         onStatusChange("Listening on http://" + proxyURL + "/", true);
-        fmt.Println("Proxy server listening on http://" + proxyURL + "/");
     }else{
         onStatusChange("Checking SSL certificate...", false);
 
@@ -67,7 +68,7 @@ func Initialize(initialAccessToken string, proxyURL string, onStatusChange statu
         }();
 
         onStatusChange("Listening on https://" + proxyURL + "/", true);
-        fmt.Println("Proxy server listening on https://" + proxyURL + "/");
+        log.Println("Proxy server listening on https://" + proxyURL + "/");
     }
 }
 

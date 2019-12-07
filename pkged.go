@@ -1,8 +1,0 @@
-package main
-
-import "github.com/markbates/pkger"
-
-import "github.com/markbates/pkger/pkging/mem"
-
-
-var _ = pkger.Apply(mem.UnmarshalEmbed([]byte(`1f8b08000000000000ffec9031abc2301446ffcb37e735f48d990b8f37545c748ff4d6c636b921495129f9ef120517457477bddcf371380b8ceb39422df01cd391ad769561e9039fcee5da980005b98914a28cda1ef4c83bd9501c137b79677e6e80c0bff51cd25aa701ead9a440cbdd3c51d97ef9a58d834a6126f1b1c31fb7dcbd4fc83d5796bb2bb8a5100d3b28d455fd8b2cb0d296a0608b4fce02bd99a8f4ca020305fa367a6874010000ffff010000ffffa8454ef954020000`)))

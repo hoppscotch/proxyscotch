@@ -17,17 +17,34 @@ A simple proxy server created for [Postwoman](https://github.com/liyasthomas/pos
 ## Building
 *These build scripts are for macOS/Linux systems. Currently, Windows build scripts have not yet been created.*
 
-- For macOS systems:
+- For macOS desktops:
 ```bash
 $ ./build.sh darwin
 ```
 
-- For Linux systems:
+- For Linux desktops:
 ```bash
 $ ./build.sh linux
 ```
 
-- For Windows systems:
+- For Windows desktops:
 ```bash
 $ ./build.sh windows
 ```
+
+- For servers:
+```bash
+$ go build server.go
+```
+
+## Usage
+To use the proxy on a server, clone the package and use:
+```bash
+$ ./server --host="<hostname>:<port>" --token="<token_or_blank>"
+```
+
+- The `host` and `token` parameters are optional. The defaults are as follows:
+- `host`: `localhost:9159`
+- `token`: blank; allowing anyone to access (see below)
+
+**NOTE:** When the token is blank it will allow *anybody* to access your proxy server. This may be what you want, but do keep that in mind.
