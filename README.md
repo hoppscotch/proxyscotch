@@ -17,12 +17,17 @@ A simple proxy server created for [Postwoman](https://github.com/liyasthomas/pos
 ## Building
 *These build scripts are for macOS/Linux systems. Currently, Windows build scripts have not yet been created.*
 
-- For *NIX (Linux/macOS) systems:
+- For macOS systems:
 ```bash
-$ ./build.sh unix
+$ ./build.sh darwin
+```
+
+- For Linux systems:
+```bash
+$ ./build.sh linux
 ```
 
 - For Windows systems:
 ```bash
-$ ./build.sh win32
+$ ./build.sh windows
 ```

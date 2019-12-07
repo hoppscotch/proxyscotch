@@ -4,11 +4,11 @@ import (
     "github.com/atotto/clipboard"
     "github.com/getlantern/systray"
     "github.com/martinlindhe/inputbox"
-    "github.com/martinlindhe/notify"
     "github.com/pkg/browser"
 
     "postwoman.io/proxy/icons"
-    "postwoman.io/proxy/proxy"
+    "postwoman.io/proxy/libproxy"
+    "postwoman.io/proxy/notifier"
 );
 
 var mStatus *systray.MenuItem;
@@ -59,8 +59,8 @@ func onReady() {
                 _ = browser.OpenURL("https://postwoman.io/");
 
             case <- mCopyAccessToken.ClickedCh:
-                _ = clipboard.WriteAll(proxy.GetAccessToken());
-                notify.Notify("Postwoman", "Proxy Access Token copied...", "The Proxy Access Token has been copied to your clipboard.", "icons/icon.png");
+                _ = clipboard.WriteAll(libproxy.GetAccessToken());
+                _ = notifier.Notify("Postwoman Proxy", "Proxy Access Token copied...", "The Proxy Access Token has been copied to your clipboard.", notifier.GetIcon());
 
             case <- mViewHelp.ClickedCh:
                 _ = browser.OpenURL("https://github.com/NBTX/postwoman-proxy/wiki");
@@ -68,8 +68,13 @@ func onReady() {
             case <- mSetAccessToken.ClickedCh:
                 newAccessToken, success := inputbox.InputBox("Postwoman Proxy", "Please enter the new Proxy Access Token...\n(Leave this blank to disable access checks.)", "");
                 if success {
-                    proxy.SetAccessToken(newAccessToken);
-                    notify.Notify("Postwoman", "Proxy Access Token updated...", "The Proxy Access Token has been updated.", "icons/icon.png")
+                    libproxy.SetAccessToken(newAccessToken);
+
+                    if(len(newAccessToken) == 0){
+                        _ = notifier.Notify("Postwoman Proxy", "Proxy Access check disabled.", "**Anyone can access your proxy server!** The Proxy Access Token check has been disabled.", notifier.GetIcon());
+                    }else{
+                        _ = notifier.Notify("Postwoman Proxy", "Proxy Access Token updated...", "The Proxy Access Token has been updated.", notifier.GetIcon());
+                    }
                 }
 
             case <- mUpdateCheck.ClickedCh:
@@ -88,7 +93,7 @@ func onExit() {
 }
 
 func runPostwomanProxy() {
-    proxy.Initialize("test", "postwoman-proxy.local:9159", onProxyStateChange);
+    libproxy.Initialize("postwoman", "127.0.0.1:9159", onProxyStateChange, true);
 }
 
 func onProxyStateChange(status string, isListening bool){
