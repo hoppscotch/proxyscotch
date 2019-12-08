@@ -9,7 +9,7 @@
 
 ---
 
-A simple proxy server created for [Postwoman](https://github.com/liyasthomas/postwoman/) and hosted by [ApolloTV](https://apollotv.xyz/).
+A simple proxy server created by [@NBTX](https://github.com/NBTX/) for [Postwoman](https://github.com/liyasthomas/postwoman/) and hosted by [ApolloTV](https://apollotv.xyz/).
 
 ## Demo 🚀
 [https://postwoman.io](https://postwoman.io)
