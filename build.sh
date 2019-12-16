@@ -33,5 +33,9 @@ if [ "$PLATFORM" == "darwin" ]; then
   cp icons/icon.png out/darwin/PostwomanProxy.app/Contents/MacOS/icons/
   GOOS="darwin" go build -o "out/darwin/PostwomanProxy.app/Contents/MacOS/postwoman-proxy"
 elif [ "$PLATFORM" == "windows" ]; then
+  echo "NOTICE: postwoman-proxy is untested and currently unsupported on Windows."
   GOOS="windows" go build -o "out/windows/postwoman-proxy.exe"
+elif [ "$PLATFORM" == "linux" ]; then
+  echo "NOTICE: postwoman-proxy is untested and currently unsupported on Linux."
+  GOOS="linux" go build -o "out/linux/postwoman"
 fi
