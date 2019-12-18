@@ -3,10 +3,10 @@ package main
 import (
     "github.com/atotto/clipboard"
     "github.com/getlantern/systray"
-    "github.com/martinlindhe/inputbox"
     "github.com/pkg/browser"
 
     "postwoman.io/proxy/icons"
+    "postwoman.io/proxy/inputbox"
     "postwoman.io/proxy/libproxy"
     "postwoman.io/proxy/notifier"
 );
@@ -70,7 +70,7 @@ func onReady() {
                 if success {
                     libproxy.SetAccessToken(newAccessToken);
 
-                    if(len(newAccessToken) == 0){
+                    if len(newAccessToken) == 0 {
                         _ = notifier.Notify("Postwoman Proxy", "Proxy Access check disabled.", "**Anyone can access your proxy server!** The Proxy Access Token check has been disabled.", notifier.GetIcon());
                     }else{
                         _ = notifier.Notify("Postwoman Proxy", "Proxy Access Token updated...", "The Proxy Access Token has been updated.", notifier.GetIcon());

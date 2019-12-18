@@ -34,7 +34,7 @@ $ ./build.sh windows
 
 - For servers:
 ```bash
-$ go build server.go
+$ go build server/server.go
 ```
 
 ## Usage

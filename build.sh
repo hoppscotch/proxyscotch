@@ -22,7 +22,7 @@ else
   exit 3
 fi
 
-[ -d "out/$PLATFORM" ] || mkdir "out/"
+[ -d "out/" ] || mkdir "out/"
 [ -d "out/$PLATFORM" ] && rm -r "out/$PLATFORM"
 mkdir "out/$PLATFORM"
 cp -r "resources/$PLATFORM" "out"
@@ -33,8 +33,19 @@ if [ "$PLATFORM" == "darwin" ]; then
   cp icons/icon.png out/darwin/PostwomanProxy.app/Contents/MacOS/icons/
   GOOS="darwin" go build -o "out/darwin/PostwomanProxy.app/Contents/MacOS/postwoman-proxy"
 elif [ "$PLATFORM" == "windows" ]; then
-  echo "NOTICE: postwoman-proxy is untested and currently unsupported on Windows."
-  GOOS="windows" go build -o "out/windows/postwoman-proxy.exe"
+  [ -f "rsrc.syso" ] && rm rsrc.syso
+  go get github.com/akavel/rsrc
+
+  rsrc -manifest="out/windows/postwoman-proxy.manifest" -ico="icons/icon.ico" -o rsrc.syso
+  GOOS="windows" go build -ldflags -H=windowsgui -o "out/windows/postwoman-proxy.exe"
+
+  mkdir out/windows/icons
+  cp icons/icon.png "out/windows/icons/icon.png"
+
+  mkdir out/windows/data
+
+  rm out/windows/postwoman-proxy.manifest
+  rm rsrc.syso
 elif [ "$PLATFORM" == "linux" ]; then
   echo "NOTICE: postwoman-proxy is untested and currently unsupported on Linux."
   GOOS="linux" go build -o "out/linux/postwoman"
