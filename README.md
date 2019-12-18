@@ -34,10 +34,22 @@ $ ./build.sh windows
 
 - For servers:
 ```bash
-$ go build server/server.go
+$ GOOS="<darwin/windows/linux>" go build server/server.go
 ```
+> The resulting executable will be placed in the project root directory.
+
+## Installers
+The `installers/` directory contains scripts for each platform to generate an installer application.  
+Each platform's installer directory, contains the relevant information for that installer.
+- [macOS](installers/darwin)
+- [Windows](installers/windows)
+- [Linux](installers/linux)
 
 ## Usage
+### Desktops
+The proxy will add a tray icon to the native system tray for your platform, which will contain all of the options for the proxy.
+
+### Servers
 To use the proxy on a server, clone the package and use:
 ```bash
 $ ./server --host="<hostname>:<port>" --token="<token_or_blank>"
