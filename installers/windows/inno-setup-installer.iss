@@ -23,7 +23,7 @@ UsedUserAreasWarning=no
 ; Uncomment the following line to run in non administrative install mode (install for current user only.)
 ;PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog
-OutputDir=..\..\out\windows\installer
+OutputDir=..\..\out\windows-desktop\installer
 OutputBaseFilename=Install Postwoman Proxy
 SetupIconFile=..\..\icons\icon.ico
 Compression=lzma
@@ -38,9 +38,9 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked; OnlyBelowVersion: 6.1; Check: not IsAdminInstallMode
 
 [Files]
-Source: "..\..\out\windows\postwoman-proxy.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\..\out\windows\data"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\..\out\windows\icons\*"; DestDir: "{app}\icons"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\..\out\windows-desktop\postwoman-proxy.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\..\out\windows-desktop\data"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\..\out\windows-desktop\icons\*"; DestDir: "{app}\icons"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]

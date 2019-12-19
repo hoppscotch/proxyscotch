@@ -1,12 +1,51 @@
 #!/bin/bash
 
 if [ $# -lt 1 ]; then
-  echo "Usage: $0 <darwin|linux|windows>"
+  echo "Usage: $0 <darwin|linux|windows> [<server|desktop>]"
   exit 3
 fi
 
 # Collect parameters.
 PLATFORM="$1"
+BUILD_TYPE="$2"
+
+# Ensure that a valid OS/platform has been selected.
+if [ "$PLATFORM" != "darwin" ] && [ "$PLATFORM" != "linux" ] && [ "$PLATFORM" != "windows" ]; then
+	echo "Invalid platform selected ($PLATFORM). It must be one of <darwin|linux|windows>."
+	exit 4
+fi
+
+# Ensure that a valid build type has been selected.
+if [ $# -lt 2 ]; then
+	BUILD_TYPE="desktop"
+elif [ "$BUILD_TYPE" != "desktop" ] && [ "$BUILD_TYPE" != "server" ]; then
+	echo "Invalid build type selected ($BUILD_TYPE). It must be one of <server|desktop>."
+	exit 5
+fi
+
+# Ensure output directory exists.
+[ -d "out/" ] || mkdir "out/"
+[ -d "out/$PLATFORM-$BUILD_TYPE" ] && rm -r "out/$PLATFORM-$BUILD_TYPE"
+mkdir "out/$PLATFORM-$BUILD_TYPE"
+OUTPUT_DIR="out/$PLATFORM-$BUILD_TYPE"
+
+# Handle special build: server
+if [ "$BUILD_TYPE" == "server" ]; then
+	if [ "$PLATFORM" == "windows" ]; then
+		# Fetch RSRC
+		[ -f "rsrc.syso" ] && rm rsrc.syso
+		go get github.com/akavel/rsrc
+		# Build rsrc.syso with icon.
+		rsrc -ico="icons/icon.ico" -o rsrc.syso
+		# Build executable.
+		GOOS="$PLATFORM" go build -o "$OUTPUT_DIR/postwoman-proxy-server.exe"
+		# Remove leftover rsrc.syso
+		rm rsrc.syso
+	else
+		GOOS="$PLATFORM" go build -o "$OUTPUT_DIR/postwoman-proxy-server"
+	fi
+	exit
+fi
 
 # Remove all legacy icons.
 [ -f icons/icon_unix.go ] && rm icons/icon_unix.go
@@ -22,31 +61,28 @@ else
   exit 3
 fi
 
-[ -d "out/" ] || mkdir "out/"
-[ -d "out/$PLATFORM" ] && rm -r "out/$PLATFORM"
-mkdir "out/$PLATFORM"
-cp -r "resources/$PLATFORM" "out"
+cp -r "resources/$PLATFORM/." "$OUTPUT_DIR/"
 
 if [ "$PLATFORM" == "darwin" ]; then
-  mkdir -p "out/darwin/PostwomanProxy.app/Contents/MacOS"
-  mkdir -p "out/darwin/PostwomanProxy.app/Contents/MacOS/icons"
-  cp icons/icon.png out/darwin/PostwomanProxy.app/Contents/MacOS/icons/
-  GOOS="darwin" go build -o "out/darwin/PostwomanProxy.app/Contents/MacOS/postwoman-proxy"
+  mkdir -p "$OUTPUT_DIR/PostwomanProxy.app/Contents/MacOS"
+  mkdir -p "$OUTPUT_DIR/PostwomanProxy.app/Contents/MacOS/icons"
+  cp icons/icon.png "$OUTPUT_DIR/PostwomanProxy.app/Contents/MacOS/icons/"
+  GOOS="darwin" go build -o "$OUTPUT_DIR/PostwomanProxy.app/Contents/MacOS/postwoman-proxy"
 elif [ "$PLATFORM" == "windows" ]; then
   [ -f "rsrc.syso" ] && rm rsrc.syso
   go get github.com/akavel/rsrc
 
-  rsrc -manifest="out/windows/postwoman-proxy.manifest" -ico="icons/icon.ico" -o rsrc.syso
-  GOOS="windows" go build -ldflags -H=windowsgui -o "out/windows/postwoman-proxy.exe"
+  rsrc -manifest="$OUTPUT_DIR/postwoman-proxy.manifest" -ico="icons/icon.ico" -o rsrc.syso
+  GOOS="windows" go build -ldflags -H=windowsgui -o "$OUTPUT_DIR/postwoman-proxy.exe"
 
-  mkdir out/windows/icons
-  cp icons/icon.png "out/windows/icons/icon.png"
+  mkdir $OUTPUT_DIR/icons
+  cp icons/icon.png "$OUTPUT_DIR/icons/icon.png"
 
-  mkdir out/windows/data
+  mkdir $OUTPUT_DIR/data
 
-  rm out/windows/postwoman-proxy.manifest
+  rm $OUTPUT_DIR/postwoman-proxy.manifest
   rm rsrc.syso
 elif [ "$PLATFORM" == "linux" ]; then
   echo "NOTICE: postwoman-proxy is untested and currently unsupported on Linux."
-  GOOS="linux" go build -o "out/linux/postwoman"
+  GOOS="linux" go build -o "$OUTPUT_DIR/postwoman-proxy"
 fi

@@ -14,42 +14,57 @@ A simple proxy server created by [@NBTX](https://github.com/NBTX/) for [Postwoma
 ## Demo 🚀
 [https://postwoman.io](https://postwoman.io)
 
-## Building
-*These build scripts are for macOS/Linux systems. Currently, Windows build scripts have not yet been created.*
 
-- For macOS desktops:
+
+## Building 🏗️
+
+*These are bash scripts. In order to execute them on Windows, you will need to use some form of bash shell on Windows. We recommend [Git Bash](https://gitforwindows.org/).*
+
+- macOS:
 ```bash
+# To build the desktop tray application:
 $ ./build.sh darwin
+
+# To build the server application:
+$ ./build.sh darwin server
 ```
 
 - For Linux desktops:
 ```bash
+# To build the desktop tray application:
 $ ./build.sh linux
+
+# To build the server application:
+$ ./build.sh linux server
 ```
 
 - For Windows desktops:
 ```bash
+# To build the desktop tray application:
 $ ./build.sh windows
+
+# To build the server application:
+$ ./build.sh windows server
 ```
 
-- For servers:
-```bash
-$ GOOS="<darwin/windows/linux>" go build server/server.go
-```
-> The resulting executable will be placed in the project root directory.
+> The build output is placed in the `out/` directory.
 
-## Installers
+
+
+## Installers 🧙
 The `installers/` directory contains scripts for each platform to generate an installer application.  
 Each platform's installer directory, contains the relevant information for that installer.
 - [macOS](installers/darwin)
 - [Windows](installers/windows)
 - [Linux](installers/linux)
 
-## Usage
-### Desktops
+
+
+## Usage 👨‍💻
+### Desktops 🖥️
 The proxy will add a tray icon to the native system tray for your platform, which will contain all of the options for the proxy.
 
-### Servers
+### Servers 🖧
 To use the proxy on a server, clone the package and use:
 ```bash
 $ ./server --host="<hostname>:<port>" --token="<token_or_blank>"
