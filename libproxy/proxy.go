@@ -7,11 +7,15 @@ import (
     "log"
     "net/http"
     "net/url"
+    "strconv"
     "strings"
+
+    "github.com/google/uuid"
 );
 
 type statusChangeFunction func(status string, isListening bool);
 var accessToken string;
+var sessionFingerprint string;
 
 type Request struct {
     AccessToken string;
@@ -33,8 +37,15 @@ type Response struct {
     Headers map[string]string   `json:"headers"`;
 }
 
-func Initialize(initialAccessToken string, proxyURL string, onStatusChange statusChangeFunction, withSSL bool, finished chan bool) {
+func Initialize(
+    initialAccessToken string,
+    proxyURL string,
+    onStatusChange statusChangeFunction,
+    withSSL bool,
+    finished chan bool,
+) {
     accessToken = initialAccessToken;
+    sessionFingerprint = uuid.New().String()
     log.Println("Starting proxy server...");
 
     http.HandleFunc("/", proxyHandler);
@@ -93,7 +104,7 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
     // Then, for anything other than an POST request, we'll return an empty JSON object.
     response.Header().Add("Content-Type", "application/json; charset=utf-8");
     if request.Method != "POST" {
-        _, _ = fmt.Fprintln(response, "{}");
+        _, _ = fmt.Fprintln(response, "{\"success\": true, \"data\":{\"sessionFingerprint\":\"" + sessionFingerprint + "\", \"isProtected\":" + strconv.FormatBool(len(accessToken) > 0) + "}}");
         return;
     }
 
@@ -108,7 +119,7 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
         return;
     }
 
-    if(len(accessToken) > 0 && requestData.AccessToken != accessToken){
+    if (len(accessToken) > 0 && requestData.AccessToken != accessToken) {
         log.Print("An unauthorized request was made.");
         _, _ = fmt.Fprintln(response, "{\"success\": false, \"data\":{\"message\":\"(Proxy Error) Unauthorized request; you may need to set your access token in Settings.\"}}");
         return;
