@@ -32,17 +32,9 @@ OUTPUT_DIR="out/$PLATFORM-$BUILD_TYPE"
 # Handle special build: server
 if [ "$BUILD_TYPE" == "server" ]; then
 	if [ "$PLATFORM" == "windows" ]; then
-		# Fetch RSRC
-		[ -f "rsrc.syso" ] && rm rsrc.syso
-		go get github.com/akavel/rsrc
-		# Build rsrc.syso with icon.
-		rsrc -ico="icons/icon.ico" -o rsrc.syso
-		# Build executable.
-		GOOS="$PLATFORM" go build -o "$OUTPUT_DIR/postwoman-proxy-server.exe"
-		# Remove leftover rsrc.syso
-		rm rsrc.syso
+		GOOS="$PLATFORM" go build -o "$OUTPUT_DIR/postwoman-proxy-server.exe" server/server.go
 	else
-		GOOS="$PLATFORM" go build -o "$OUTPUT_DIR/postwoman-proxy-server"
+		GOOS="$PLATFORM" go build -o "$OUTPUT_DIR/postwoman-proxy-server" server/server.go
 	fi
 	exit
 fi
