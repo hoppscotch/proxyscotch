@@ -137,9 +137,8 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
     }
 
     if(len(requestData.Data) > 0) {
-        var proxyRequestBody []byte;
-        proxyRequestBody, err = ioutil.ReadAll(strings.NewReader(requestData.Data));
-        _, err = proxyRequest.Body.Read(proxyRequestBody);
+        proxyRequest.Body = ioutil.NopCloser(strings.NewReader(requestData.Data));
+        proxyRequest.Body.Close();
     }
 
     var client http.Client;
