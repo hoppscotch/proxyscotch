@@ -127,6 +127,7 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
 
     // Make the request
     var proxyRequest http.Request;
+    proxyRequest.Header = make(http.Header);
     proxyRequest.Method = requestData.Method;
     proxyRequest.URL, err = url.Parse(requestData.Url);
     if(len(requestData.Auth.Username) > 0 && len(requestData.Auth.Password) > 0) {
