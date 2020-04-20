@@ -30,8 +30,8 @@ mkdir "out/$PLATFORM-$BUILD_TYPE"
 OUTPUT_DIR="out/$PLATFORM-$BUILD_TYPE"
 
 # Handle special build: server
-if [ "$BUILD_TYPE" == "server" ]; then
-	if [ "$PLATFORM" == "windows" ]; then
+if [ "$BUILD_TYPE" = "server" ]; then
+	if [ "$PLATFORM" = "windows" ]; then
 		GOOS="$PLATFORM" go build -o "$OUTPUT_DIR/postwoman-proxy-server.exe" server/server.go
 	else
 		GOOS="$PLATFORM" go build -o "$OUTPUT_DIR/postwoman-proxy-server" server/server.go
@@ -44,9 +44,9 @@ fi
 [ -f icons/icon_win.go ] && rm icons/icon_win.go
 
 # Build the icon for the appropriate platform.
-if [ "$PLATFORM" == "darwin" ] || [ "$PLATFORM" == "linux" ]; then
+if [ "$PLATFORM" = "darwin" ] || [ "$PLATFORM" == "linux" ]; then
   cat "icons/icon.png" | go run github.com/cratonica/2goarray Data icon >> icons/icon_unix.go
-elif [ "$PLATFORM" == "windows" ]; then
+elif [ "$PLATFORM" = "windows" ]; then
   cat "icons/icon.ico" | go run github.com/cratonica/2goarray Data icon >> icons/icon_win.go
 else
   echo "Unknown platform: $1"
@@ -55,12 +55,12 @@ fi
 
 cp -r "resources/$PLATFORM/." "$OUTPUT_DIR/"
 
-if [ "$PLATFORM" == "darwin" ]; then
+if [ "$PLATFORM" = "darwin" ]; then
   mkdir -p "$OUTPUT_DIR/PostwomanProxy.app/Contents/MacOS"
   mkdir -p "$OUTPUT_DIR/PostwomanProxy.app/Contents/MacOS/icons"
   cp icons/icon.png "$OUTPUT_DIR/PostwomanProxy.app/Contents/MacOS/icons/"
   GOOS="darwin" go build -o "$OUTPUT_DIR/PostwomanProxy.app/Contents/MacOS/postwoman-proxy"
-elif [ "$PLATFORM" == "windows" ]; then
+elif [ "$PLATFORM" = "windows" ]; then
   [ -f "rsrc.syso" ] && rm rsrc.syso
   go get github.com/akavel/rsrc
 
@@ -74,7 +74,7 @@ elif [ "$PLATFORM" == "windows" ]; then
 
   rm $OUTPUT_DIR/postwoman-proxy.manifest
   rm rsrc.syso
-elif [ "$PLATFORM" == "linux" ]; then
+elif [ "$PLATFORM" = "linux" ]; then
   echo "NOTICE: postwoman-proxy is untested and currently unsupported on Linux."
   GOOS="linux" go build -o "$OUTPUT_DIR/postwoman-proxy"
 fi
