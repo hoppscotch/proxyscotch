@@ -1,8 +1,9 @@
-name: goreleaser
+name: Generate Release Build
 
 on:
-  pull_request:
   push:
+    tags:
+      - 'v*'
 
 jobs:
   goreleaser:
@@ -18,13 +19,66 @@ jobs:
         name: Unshallow
         run: git fetch --prune --unshallow
       -
-         name: Cross-Compile using Docker
-         run: docker run --rm --privileged -v ($pwd):/go/src/github.com/postwoman-io/postwoman-proxy -v /var/run/docker.sock:/var/run/docker.sock -w /go/src/github.com/postwoman-io/postwoman-proxy mailchain/goreleaser-xcgo --snapshot --rm-dist
-      -
-        name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v2
+        name: Set up Go
+        uses: actions/setup-go@v2
         with:
-          version: latest
-          args: release --rm-dist
+          go-version: 1.14
+      - name: Golang CGO cross compiler
+        uses: crazy-max/ghaction-xgo@v1.3.0
+        with:
+          # xgo version
+          # xgo_version: # optional, default is latest
+          
+          # Go release to use for cross compilation
+          #go_version: # optional, default is latest
+          
+          # Destination folder to put binaries in
+          dest: build # optional, default is build
+          
+          # Sub-package to build if not root import
+          #pkg: # optional
+          
+          # Prefix to use for output naming. Default to package name
+          #prefix: # optional
+          
+          # Comma separated targets to build for. Example: windows/amd64,linux/386
+          targets: windows/386,windows/amd64,linux/386,linux/amd64,darwin/amd64 # optional, default is */*
+          
+          # Prints the names of packages as they are compiled
+          v: true # optional, default is false
+          
+          # Prints the build commands as compilation progresses
+          #x: # optional, default is false
+          
+          # Indicates which kind of object file to build
+          #buildmode: # optional, default is default
+          
+          # Arguments to pass on each go tool link invocation
+          #ldflags: # optional
+      - name: Changelog Generator
+        uses: timfallmk/github-changelog-generator-action@0.0.2
+        id: generate_changelog
+        with:
+          # Changes after this tag are included (default last tag)
+          # since-tag: # optional, default is $(git describe --abbrev=0 --tags `git rev-list --tags --skip=1 --max-count=1`)
+          
+          # GitHub token to access the GitHub API (optional)
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create Release
+        uses: actions/create-release@v1.0.0
+        id: create_release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          body: ${{ steps.generate_changelog.outputs.changelog }}
+          draft: false
+          prerelease: false
+      - name: xbin - Cross Binary Releaser
+        uses: GlenTiki/xbin-release-action@v1.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          assets_path: ./build
