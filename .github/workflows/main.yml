@@ -48,7 +48,7 @@ jobs:
           v: true # optional, default is false
           
           # Prints the build commands as compilation progresses
-          #x: # optional, default is false
+          x: true # optional, default is false
           
           # Indicates which kind of object file to build
           #buildmode: # optional, default is default
@@ -77,4 +77,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          assets_path: ./build
+          assets_path: ./build/
