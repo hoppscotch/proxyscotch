@@ -65,13 +65,19 @@ Each platform's installer directory, contains the relevant information for that 
 The proxy will add a tray icon to the native system tray for your platform, which will contain all of the options for the proxy.
 
 ### Servers 🖧
-To use the proxy on a server, clone the package and use:
+To use the proxy on a server, clone the package, build the server using the instructions above, and use:
 ```bash
-$ ./server --host="<hostname>:<port>" --token="<token_or_blank>"
+$ ./out/<platform>-server/server --host="<hostname>:<port>" --token="<token_or_blank>"
+
+# e.g. on Linux
+$ ./out/linux-server/server --host="<hostname>:<port>" --token="<token_or_blank>"
+
+# or on Windows
+$ ./out/windows-server/server.exe --host="<hostname>:<port>" --token="<token_or_blank>"
 ```
 
 - The `host` and `token` parameters are optional. The defaults are as follows:
 - `host`: `localhost:9159`
 - `token`: blank; allowing anyone to access (see below)
 
-**NOTE:** When the token is blank it will allow *anybody* to access your proxy server. This may be what you want, but do keep that in mind.
+**NOTE:** When the token is blank it will allow *anybody* to access your proxy server. This may be what you want, but please be sure to consider the security implications.
