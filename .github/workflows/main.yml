@@ -2,8 +2,8 @@ name: Generate Release Build
 
 on:
   push:
-    tags:
-      - 'v*'
+#    tags:
+#      - 'v*'
 
 jobs:
   release_build:
