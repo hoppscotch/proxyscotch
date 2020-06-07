@@ -7,7 +7,7 @@ on:
 
 jobs:
   release_build:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     steps:
       #-
       #  name: Installing getlantern/systray dependencies...
