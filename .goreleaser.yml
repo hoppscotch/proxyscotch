@@ -3,12 +3,22 @@
 before:
   hooks:
     # You may remove this if you don't use go modules.
-    # - go mod download
+    - go mod download
     # you may remove this if you don't need go generate
     # - go generate ./...
 builds:
 - env:
-  - CGO_ENABLED=0
+  - CGO_ENABLED=1
+  - GO111MODULE=on
+  
+  goos:
+    - darwin
+    - linux
+    - windows
+  
+  ignore:
+    - goos: darwin
+      goarch: 386
 archives:
 - replacements:
     darwin: Darwin
@@ -26,3 +36,9 @@ changelog:
     exclude:
     - '^docs:'
     - '^test:'
+release:
+  github:
+    owner: postwoman-io
+    name: postwoman-proxy
+    
+  name_template: "Postwoman Proxy v{{.Version}}"
