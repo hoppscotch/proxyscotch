@@ -18,10 +18,8 @@ jobs:
         name: Unshallow
         run: git fetch --prune --unshallow
       -
-        name: Set up Go
-        uses: actions/setup-go@v2
-        with:
-          go-version: 1.14
+         name: Cross-Compile using Docker
+         run: docker run --rm --privileged -v ($pwd):/go/src/github.com/postwoman-io/postwoman-proxy -v /var/run/docker.sock:/var/run/docker.sock -w /go/src/github.com/postwoman-io/postwoman-proxy mailchain/goreleaser-xcgo --snapshot --rm-dist
       -
         name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v2
