@@ -6,7 +6,7 @@ on:
       - 'v*'
 
 jobs:
-  goreleaser:
+  release_build:
     runs-on: macos-latest
     steps:
       #-
@@ -58,17 +58,17 @@ jobs:
       - name: Changelog Generator
         uses: timfallmk/github-changelog-generator-action@0.0.2
         id: generate_changelog
-        with:
+        #with:
           # Changes after this tag are included (default last tag)
           # since-tag: # optional, default is $(git describe --abbrev=0 --tags `git rev-list --tags --skip=1 --max-count=1`)
           
           # GitHub token to access the GitHub API (optional)
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          # github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Create Release
         uses: actions/create-release@v1.0.0
         id: create_release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        #env:
+        #  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.ref }}
           release_name: Release ${{ github.ref }}
@@ -77,8 +77,8 @@ jobs:
           prerelease: false
       - name: xbin - Cross Binary Releaser
         uses: GlenTiki/xbin-release-action@v1.0.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        #env:
+        #  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           assets_path: ./build
