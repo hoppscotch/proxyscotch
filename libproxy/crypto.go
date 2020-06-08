@@ -32,22 +32,6 @@ func publicKeyOf(priv interface{}) interface{} {
 	}
 }
 
-func pemBlockOf(priv interface{}) *pem.Block {
-	switch k := priv.(type) {
-	case *rsa.PrivateKey:
-		return &pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(k)}
-	case *ecdsa.PrivateKey:
-		b, err := x509.MarshalECPrivateKey(k)
-		if err != nil {
-			log.Printf("Unable to marshal ECDSA private key: %v", err)
-			os.Exit(2)
-		}
-		return &pem.Block{Type: "EC PRIVATE KEY", Bytes: b}
-	default:
-		return nil
-	}
-}
-
 func CreateKeyPair() *[2]bytes.Buffer {
 	private, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	if err != nil {
@@ -122,19 +106,6 @@ func EnsurePrivateKeyInstalled () error {
 	// Otherwise return any errors that may have occurred.
 	// (This is nil if no errors occurred.)
 	return err;
-}
-
-func LoadKeyPair() error {
-	encodedPem, _ := ioutil.ReadFile(GetDataPath() + "/cert.pem");
-	block, _ := pem.Decode(encodedPem);
-
-	if(block.Type != "CERTIFICATE"){
-		return nil;
-	}
-
-	//derBytes := block.Bytes;
-	//_, _  := x509.ParsePKCS1PrivateKey(derBytes);
-	return nil;
 }
 
 func GetDataPath() string {

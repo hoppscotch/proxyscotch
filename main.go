@@ -11,6 +11,9 @@ import (
     "postwoman.io/proxy/notifier"
 );
 
+var VersionName string;
+var VersionCode string;
+
 var mStatus *systray.MenuItem;
 var mCopyAccessToken *systray.MenuItem;
 
@@ -20,7 +23,7 @@ func main() {
 
 func onReady() {
     systray.SetIcon(icon.Data);
-    systray.SetTooltip("Proxyman v1.0.0 - created by NBTX");
+    systray.SetTooltip("Proxywoman v" +  VersionName + " (" + VersionCode + ") - created by NBTX");
 
     /** Set up menu items. **/
 
