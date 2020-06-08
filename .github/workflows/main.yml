@@ -8,8 +8,66 @@ on:
 
 jobs:
 
-  build:
-    name: Cross-Compile and Release
+  build-linux:
+    name: Linux Build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Install Dependencies
+      run: sudo apt install gcc libgtk-3-dev libappindicator3-dev libwebkit2gtk-4.0-dev
+    -
+      name: Checkout
+      uses: actions/checkout@v2
+    -
+      name: Unshallow
+      run: git fetch --prune --unshallow
+    -
+      name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.14
+    -
+       name: Run Builds
+       run: |
+         rm -rf ./out
+         ./build.sh linux server
+         # ./build.sh linux desktop - Linux desktop build is not currently supported.
+    - name: Upload Build Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        # Artifact name
+        # name: # optional
+        path: ./out/**/*
+  
+  build-darwin:
+    name: Darwin Build
+    runs-on: macos-latest
+    steps:
+    -
+      name: Checkout
+      uses: actions/checkout@v2
+    -
+      name: Unshallow
+      run: git fetch --prune --unshallow
+    -
+      name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.14
+    -
+       name: Run Builds
+       run: |
+         rm -rf ./out
+         ./build.sh darwin server
+         ./build.sh darwin desktop
+    - name: Upload Build Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        # Artifact name
+        # name: # optional
+        path: ./out/**/*
+  
+  build-windows:
+    name: Windows Build
     runs-on: ubuntu-latest
     steps:
     -
@@ -24,11 +82,14 @@ jobs:
       with:
         go-version: 1.14
     -
-      name: Cross-Compile & Execute GoReleaser
-      run: |
-        docker run --rm --privileged \
-        -e GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} \
-        -v $PWD:/go/src/github.com/postwoman-io/postwoman-proxy \
-        -v /var/run/docker.sock:/var/run/docker.sock \
-        -w /go/src/github.com/postwoman-io/postwoman-proxy \
-        mailchain/goreleaser-xcgo --snapshot --rm-dist
+       name: Run Builds
+       run: |
+         rm -rf ./out
+         ./build.sh windows server
+         ./build.sh windows desktop
+    - name: Upload Build Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        # Artifact name
+        # name: # optional
+        path: ./out/**/*
