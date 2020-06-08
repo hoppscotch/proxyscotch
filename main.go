@@ -20,7 +20,7 @@ func main() {
 
 func onReady() {
     systray.SetIcon(icon.Data);
-    systray.SetTooltip("Postwoman Proxy v1.0.0 - created by NBTX");
+    systray.SetTooltip("Proxyman v1.0.0 - created by NBTX");
 
     /** Set up menu items. **/
 
@@ -47,7 +47,7 @@ func onReady() {
     systray.AddSeparator();
 
     // Quit Proxy
-    mQuit := systray.AddMenuItem("Quit Postwoman Proxy", "");
+    mQuit := systray.AddMenuItem("Quit Proxywoman", "");
 
     /** Start proxy server. **/
     go runPostwomanProxy();
@@ -60,20 +60,20 @@ func onReady() {
 
             case <- mCopyAccessToken.ClickedCh:
                 _ = clipboard.WriteAll(libproxy.GetAccessToken());
-                _ = notifier.Notify("Postwoman Proxy", "Proxy Access Token copied...", "The Proxy Access Token has been copied to your clipboard.", notifier.GetIcon());
+                _ = notifier.Notify("Proxywoman", "Proxy Access Token copied...", "The Proxy Access Token has been copied to your clipboard.", notifier.GetIcon());
 
             case <- mViewHelp.ClickedCh:
-                _ = browser.OpenURL("https://github.com/NBTX/postwoman-proxy/wiki");
+                _ = browser.OpenURL("https://github.com/postwoman-io/proxywoman/wiki");
 
             case <- mSetAccessToken.ClickedCh:
-                newAccessToken, success := inputbox.InputBox("Postwoman Proxy", "Please enter the new Proxy Access Token...\n(Leave this blank to disable access checks.)", "");
+                newAccessToken, success := inputbox.InputBox("Proxywoman", "Please enter the new Proxy Access Token...\n(Leave this blank to disable access checks.)", "");
                 if success {
                     libproxy.SetAccessToken(newAccessToken);
 
                     if len(newAccessToken) == 0 {
-                        _ = notifier.Notify("Postwoman Proxy", "Proxy Access check disabled.", "**Anyone can access your proxy server!** The Proxy Access Token check has been disabled.", notifier.GetIcon());
+                        _ = notifier.Notify("Proxywoman", "Proxy Access check disabled.", "**Anyone can access your proxy server!** The Proxy Access Token check has been disabled.", notifier.GetIcon());
                     }else{
-                        _ = notifier.Notify("Postwoman Proxy", "Proxy Access Token updated...", "The Proxy Access Token has been updated.", notifier.GetIcon());
+                        _ = notifier.Notify("Proxywoman", "Proxy Access Token updated...", "The Proxy Access Token has been updated.", notifier.GetIcon());
                     }
                 }
 

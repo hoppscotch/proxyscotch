@@ -108,13 +108,13 @@ func EnsurePrivateKeyInstalled () error {
 
 		if runtime.GOOS == "darwin" {
 			_ = exec.Command("open", GetDataPath()).Run();
-			_, _ = dlgs.Warning("Postwoman Proxy", "Postwoman needs you to install a root certificate authority (cert.pem).\nPlease double-click the certificate file to open it in Keychain Access and follow the installation and trust process.\n\nFor more information about this process and why it's required, please click the Postwoman icon in the status tray and select 'Help'.\n\nClick OK when you have installed the certificate and marked it as trusted.");
+			_, _ = dlgs.Warning("Proxywoman", "Proxywoman needs you to install a root certificate authority (cert.pem).\nPlease double-click the certificate file to open it in Keychain Access and follow the installation and trust process.\n\nFor more information about this process and why it's required, please click the Postwoman icon in the status tray and select 'Help'.\n\nClick OK when you have installed the certificate and marked it as trusted.");
 		}
 
 
 		if runtime.GOOS == "windows" {
 			_ = exec.Command("explorer.exe", GetDataPath() + string(os.PathSeparator) + "cert.cer").Run();
-			_, _ = dlgs.Warning("Postwoman Proxy", "Postwoman needs you to install a root certificate authority (cert.cer).\nPlease install the certificate (opened) into the 'Trusted Root Certification Authorities' store for the Local Machine.\n\nFor more information about this process and why it's required, please click the Postwoman icon in the system tray and select 'Help'.\n\nClick OK when you have installed the certificate and marked it as trusted.");
+			_, _ = dlgs.Warning("Proxywoman", "Proxywoman needs you to install a root certificate authority (cert.cer).\nPlease install the certificate (opened) into the 'Trusted Root Certification Authorities' store for the Local Machine.\n\nFor more information about this process and why it's required, please click the Postwoman icon in the system tray and select 'Help'.\n\nClick OK when you have installed the certificate and marked it as trusted.");
 		}
 
 		return err;

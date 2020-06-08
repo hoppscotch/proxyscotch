@@ -32,9 +32,9 @@ OUTPUT_DIR="out/$PLATFORM-$BUILD_TYPE"
 # Handle special build: server
 if [ "$BUILD_TYPE" = "server" ]; then
 	if [ "$PLATFORM" = "windows" ]; then
-		GOOS="$PLATFORM" go build -o "$OUTPUT_DIR/postwoman-proxy-server.exe" server/server.go
+		GOOS="$PLATFORM" go build -o "$OUTPUT_DIR/proxywoman-server.exe" server/server.go
 	else
-		GOOS="$PLATFORM" go build -o "$OUTPUT_DIR/postwoman-proxy-server" server/server.go
+		GOOS="$PLATFORM" go build -o "$OUTPUT_DIR/proxywoman-server" server/server.go
 	fi
 	exit
 fi
@@ -56,16 +56,16 @@ fi
 cp -r "resources/$PLATFORM/." "$OUTPUT_DIR/"
 
 if [ "$PLATFORM" = "darwin" ]; then
-  mkdir -p "$OUTPUT_DIR/PostwomanProxy.app/Contents/MacOS"
-  mkdir -p "$OUTPUT_DIR/PostwomanProxy.app/Contents/MacOS/icons"
-  cp icons/icon.png "$OUTPUT_DIR/PostwomanProxy.app/Contents/MacOS/icons/"
-  GOOS="darwin" go build -o "$OUTPUT_DIR/PostwomanProxy.app/Contents/MacOS/postwoman-proxy"
+  mkdir -p "$OUTPUT_DIR/Proxywoman.app/Contents/MacOS"
+  mkdir -p "$OUTPUT_DIR/Proxywoman.app/Contents/MacOS/icons"
+  cp icons/icon.png "$OUTPUT_DIR/Proxywoman.app/Contents/MacOS/icons/"
+  GOOS="darwin" GO111MODULE=on go build -o "$OUTPUT_DIR/Proxywoman.app/Contents/MacOS/postwoman-proxy"
 elif [ "$PLATFORM" = "windows" ]; then
   [ -f "rsrc.syso" ] && rm rsrc.syso
   go get github.com/akavel/rsrc
 
   rsrc -manifest="$OUTPUT_DIR/postwoman-proxy.manifest" -ico="icons/icon.ico" -o rsrc.syso
-  GOOS="windows" go build -ldflags -H=windowsgui -o "$OUTPUT_DIR/postwoman-proxy.exe"
+  GOOS="windows" GO111MODULE=on go build -ldflags -H=windowsgui -o "$OUTPUT_DIR/proxywoman.exe"
 
   mkdir $OUTPUT_DIR/icons
   cp icons/icon.png "$OUTPUT_DIR/icons/icon.png"
@@ -75,6 +75,6 @@ elif [ "$PLATFORM" = "windows" ]; then
   rm $OUTPUT_DIR/postwoman-proxy.manifest
   rm rsrc.syso
 elif [ "$PLATFORM" = "linux" ]; then
-  echo "NOTICE: postwoman-proxy is untested and currently unsupported on Linux."
-  GOOS="linux" go build -o "$OUTPUT_DIR/postwoman-proxy"
+  echo "NOTICE: Proxywoman is untested and currently unsupported on Linux."
+  GOOS="linux" GO111MODULE=on go build -o "$OUTPUT_DIR/proxywoman"
 fi

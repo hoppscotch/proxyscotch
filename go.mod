@@ -5,7 +5,7 @@ go 1.12
 require (
 	github.com/40a/go-powershell v0.0.0-20170206184816-8a975e1f46d2 // indirect
 	github.com/KnicKnic/go-powershell v0.0.8 // indirect
-	github.com/akavel/rsrc v0.8.0 // indirect
+	github.com/akavel/rsrc v0.9.0 // indirect
 	github.com/atotto/clipboard v0.1.2
 	github.com/bhendo/go-powershell v0.0.0-20190719160123-219e7fb4e41e // indirect
 	github.com/cratonica/2goarray v0.0.0-20190331194516-514510793eaa // indirect

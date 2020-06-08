@@ -1,4 +1,4 @@
-# Postwoman Proxy: Darwin Build
+# Proxywoman: Darwin Build
 
 ## resources/darwin
 

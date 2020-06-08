@@ -1,11 +1,11 @@
-; Inno Setup 6.0 Script for the Postwoman Proxy.
+; Inno Setup 6.0 Script for the Proxywoman.
 ; Created by NBTX.
 
-#define MyAppName "Postwoman Proxy"
+#define MyAppName "Proxywoman"
 #define MyAppVersion "1.0"
 #define MyAppPublisher "Postwoman.io"
 #define MyAppURL "https://postwoman.io/"
-#define MyAppExeName "postwoman-proxy.exe"
+#define MyAppExeName "proxywoman.exe"
 
 [Setup]
 ; Randomly generated GUID.
@@ -24,7 +24,7 @@ UsedUserAreasWarning=no
 ;PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog
 OutputDir=..\..\out\windows-desktop\installer
-OutputBaseFilename=Install Postwoman Proxy
+OutputBaseFilename=Install Proxywoman
 SetupIconFile=..\..\icons\icon.ico
 Compression=lzma
 SolidCompression=yes
