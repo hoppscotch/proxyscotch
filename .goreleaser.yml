@@ -1,0 +1,58 @@
+env:
+- GO111MODULE=on
+
+before:
+  hooks:
+    - go mod download
+
+builds:
+- id: proxywoman-darwin-amd64
+  ldflags: -X proxywoman_Version={{.Version}} -X proxywoman_BuildDate={{.Date}} -X proxywoman_CommitHash={{ .ShortCommit }}
+  binary: proxywoman
+  env:
+  - CGO_ENABLED=1
+  - CC=o64-clang
+  - CXX=o64-clang++
+  goos:
+    - darwin
+  goarch:
+    - amd64
+- id: proxywoman-linux
+  ldflags: -X proxywoman_Version={{.Version}} -X proxywoman_BuildDate={{.Date}} -X proxywoman_CommitHash={{ .ShortCommit }}
+  binary: proxywoman
+  env:
+  - CGO_ENABLED=1
+  goos:
+    - linux
+- id: proxywoman-windows-amd64
+  ldflags: -X proxywoman_Version={{.Version}} -X proxywoman_BuildDate={{.Date}} -X proxywoman_CommitHash={{ .ShortCommit }}
+  binary: proxywoman
+  env:
+  - CGO_ENABLED=1
+  - CC=x86_64-w64-mingw32-gcc
+  - CXX=x86_64-w64-mingw32-g++
+  goos:
+    - windows
+  goarch:
+    - amd64
+
+archives:
+- replacements:
+    darwin: Darwin
+    linux: Linux
+    windows: Windows
+    386: i386
+    amd64: x86_64
+
+checksum:
+  name_template: 'checksums.txt'
+
+snapshot:
+  name_template: "{{ .Tag }}-next"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+    - '^docs:'
+    - '^test:'
