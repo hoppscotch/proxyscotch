@@ -27,7 +27,7 @@ jobs:
       name: Cross-Compile & Execute GoReleaser
       run: |
         docker run --rm --privileged \
-        -e GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
+        -e GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} \
         -v $PWD:/go/src/github.com/postwoman-io/postwoman-proxy \
         -v /var/run/docker.sock:/var/run/docker.sock \
         -w /go/src/github.com/postwoman-io/postwoman-proxy \
