@@ -1,0 +1,34 @@
+name: Build Proxywoman
+
+on:
+  push:
+#    branches: [ master ]
+#  pull_request:
+#    branches: [ master ]
+
+jobs:
+
+  build:
+    name: Cross-Compile and Release
+    runs-on: ubuntu-latest
+    steps:
+    -
+      name: Checkout
+      uses: actions/checkout@v2
+    -
+      name: Unshallow
+      run: git fetch --prune --unshallow
+    -
+      name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.14
+    -
+      name: Cross-Compile & Execute GoReleaser
+      run: |
+        docker run --rm --privileged \
+        -e GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
+        -v $PWD:/go/src/github.com/postwoman-io/postwoman-proxy \
+        -v /var/run/docker.sock:/var/run/docker.sock \
+        -w /go/src/github.com/postwoman-io/postwoman-proxy \
+        mailchain/goreleaser-xcgo --snapshot --rm-dist
