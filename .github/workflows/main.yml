@@ -93,3 +93,21 @@ jobs:
         # Artifact name
         # name: # optional
         path: ./out/**/*
+
+  generate-release:
+    name: Execute Release
+    runs-on: ubuntu-latest
+    needs: [build-linux, build-darwin, build-windows]
+    steps:
+    -
+       name: Prepare Release Directory
+       run: mkdir ./release
+    - 
+      name: Download a Build Artifact
+      uses: actions/download-artifact@v2
+      with:
+        # Destination path
+        path: ./release # optional
+    - name: Display structure of downloaded files
+      run: ls -R
+      working-directory: ./release
