@@ -117,7 +117,7 @@ jobs:
     -
       name: Load version information
       run: |
-        source ${{ github.workspace }}/version.properties
+        source ./version.properties
         echo "::set-env name=VERSION_NAME::$VERSION_NAME"
         echo "::set-env name=VERSION_CODE::$VERSION_CODE"
     -
