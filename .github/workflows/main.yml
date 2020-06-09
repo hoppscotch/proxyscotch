@@ -133,9 +133,9 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         # The name of the tag. This should come from the webhook payload, `github.GITHUB_REF` when a user pushes a new tag
-        tag_name: ${{ github.GITHUB_REF }}
+        tag_name: "v${{ env.VERSION_NAME }}"
         # The name of the release. For example, `Release v1.0.1`
-        release_name: Release v$VERSION_NAME
+        release_name: "Release v${{ env.VERSION_NAME }}"
         # Text describing the contents of the tag.
         body: ""
         draft: false
