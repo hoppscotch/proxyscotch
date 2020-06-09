@@ -143,7 +143,7 @@ jobs:
     -
        name: Upload Release Asset
        id: upload_release_assets
-       uses: NBTX/upload-release-assets@v2.0.1
+       uses: NBTX/upload-release-assets@v2.0.2
        env:
          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
        with:
