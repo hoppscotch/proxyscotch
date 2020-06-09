@@ -60,6 +60,55 @@ if [ "$1" = "clean" ]; then
 fi
 
 #
+# COMMAND: publish
+#
+if [ "$1" = "publish" ]; then
+  RELEASE_TAG_NAME="v$VERSION_NAME"
+
+  CONFIRMED=0
+  case "$@[@]" in *"-c"*) CONFIRMED=1 ;; esac
+
+  echo "Validating..."
+  if GIT_DIR=./.git git rev-parse "$RELEASE_TAG_NAME" >/dev/null 2>&1; then
+      echo "Version $VERSION_NAME already exists! (perhaps you need to bump version name and code.)"
+      exit 1
+  fi
+
+  echo "Validation succeeded."
+  echo ""
+
+
+  if [ "$CONFIRMED" -ne 1 ]; then
+    echo "========================================"
+    echo "You are preparing the following release:"
+    echo "========================================"
+    echo ""
+    echo "Version Name: $VERSION_NAME"
+    echo "Version Code: $VERSION_CODE"
+    echo ""
+    echo "Before pushing, please ensure you have:"
+    echo "- tested your build thoroughly on"
+    echo "  all supported systems."
+    echo "- sufficiently selected and/or bumped"
+    echo "  the version number for your release."
+    echo ""
+    echo ""
+    echo "To confirm you have done this, please"
+    echo "run the same command again, specifying"
+    echo "-c."
+    exit 0
+  fi
+
+  echo "Preparing new release..."
+  git tag -a "$RELEASE_TAG_NAME"
+
+  echo "Pushing release..."
+  git push origin "$RELEASE_TAG_NAME"
+
+  exit 0
+fi
+
+#
 # COMMAND: build
 #
 
