@@ -93,7 +93,17 @@ if [ "$PLATFORM" = "darwin" ]; then
   cp icons/icon.png "$OUTPUT_DIR/Proxywoman.app/Contents/MacOS/icons/"
   GOOS="darwin" GO111MODULE=on go build -ldflags "-X main.VersionName=$VERSION_NAME -X main.VersionCode=$VERSION_CODE" -o "$OUTPUT_DIR/Proxywoman.app/Contents/MacOS/postwoman-proxy"
 
+  # Produce output binaries
   mv "$OUTPUT_DIR/Proxywoman.app" "$OUTPUT_DIR/Proxywoman-Darwin-v${VERSION_NAME}.app"
+
+  # Compressing output binaries
+  echo "Compressing output binaries"
+  WORKING_DIR=$(pwd)
+
+  cd "$OUTPUT_DIR" || exit 1
+  zip -r "Proxywoman-Darwin-v${VERSION_NAME}.zip" "Proxywoman-Darwin-v${VERSION_NAME}.app"
+
+  cd "$WORKING_DIR" || exit 1
 elif [ "$PLATFORM" = "windows" ]; then
   [ -f "rsrc.syso" ] && rm rsrc.syso
   go get github.com/akavel/rsrc
