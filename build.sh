@@ -83,8 +83,8 @@ if [ "$1" = "publish" ]; then
     echo "You are preparing the following release:"
     echo "========================================"
     echo ""
-    echo "Version Name: $VERSION_NAME"
-    echo "Version Code: $VERSION_CODE"
+    printf "Version Name:\t\t%s\n" "$VERSION_NAME"
+    printf "Version Code:\t\t%s\n" "$VERSION_CODE"
     echo ""
     echo "Before pushing, please ensure you have:"
     echo "- tested your build thoroughly on"
@@ -109,7 +109,50 @@ if [ "$1" = "publish" ]; then
 fi
 
 #
-# COMMAND: build
+# COMMAND: unpublish
+#
+if [ "$1" = "unpublish" ]; then
+  echo "Fetching all releases..."
+  git fetch
+
+  RELEASE_TAG_NAME="v$VERSION_NAME"
+
+  CONFIRMED=0
+  case "$@[@]" in *"-c"*) CONFIRMED=1 ;; esac
+
+  echo "Validating..."
+  if ! GIT_DIR=./.git git rev-parse "$RELEASE_TAG_NAME" >/dev/null 2>&1; then
+      echo "Version $VERSION_NAME doesn't exist."
+      exit 1
+  fi
+
+  echo "Validation succeeded."
+  echo ""
+
+
+  if [ "$CONFIRMED" -ne 1 ]; then
+    echo "=============================================="
+    echo "You are about to remove the following release:"
+    echo "=============================================="
+    echo ""
+    printf "Published Tag:\t\t%s\n" "$RELEASE_TAG_NAME"
+    printf "Version Name:\t\t%s\n" "$VERSION_NAME"
+    printf "Version Code:\t\t%s\n" "$VERSION_CODE"
+    echo ""
+    echo "To confirm you wish to proceed, please run the"
+    echo "same command again, specifying -c."
+    exit 0
+  fi
+
+  echo "Unpublishing release."
+  git tag -d "$RELEASE_TAG_NAME"
+  git push origin ":refs/tags/$RELEASE_TAG_NAME"
+
+  exit 0
+fi
+
+#
+# COMMAND (implicit): build
 #
 
 # Collect parameters.
