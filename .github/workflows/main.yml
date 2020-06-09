@@ -160,7 +160,7 @@ jobs:
           targets: "./release/artifact/linux-*/*.!(md)"
       -
         name: Upload macOS Server Release Assets
-        id: upload_release_assets_linux
+        id: upload_release_assets_darwin_server
         uses: NBTX/upload-release-assets@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
