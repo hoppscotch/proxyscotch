@@ -102,12 +102,47 @@ jobs:
     -
        name: Prepare Release Directory
        run: mkdir ./release
-    - 
+    -
       name: Download a Build Artifact
       uses: actions/download-artifact@v2
       with:
         # Destination path
         path: ./release # optional
-    - name: Display structure of downloaded files
-      run: ls -R
+    -
+      name: Load version information
+      run: |
+        source ./version.properties
+        echo "::set-env name=VERSION_NAME::$VERSION_NAME"
+        echo "::set-env name=VERSION_CODE::$VERSION_CODE"
+    -
+      name: Display structure of downloaded files
       working-directory: ./release
+      run: |
+        ls -R
+    -
+      name: Create a Release
+      id: create_release
+      uses: actions/create-release@v1
+      with:
+        # The name of the tag. This should come from the webhook payload, `github.GITHUB_REF` when a user pushes a new tag
+        tag_name: ${{ github.GITHUB_REF }}
+        # The name of the release. For example, `Release v1.0.1`
+        release_name: Release v$VERSION_NAME
+        # Text describing the contents of the tag.
+        body: ""
+        draft: false
+        prerelease: false
+    -
+       name: Upload Release Asset
+       id: upload_release_assets
+       uses: NBTX/upload-release-assets@v1
+       env:
+         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+       with:
+         upload_url: ${{ steps.create_release.outputs.upload_url }}
+         targets: "./release/artifact/**/*"
+ 
+ 
+ 
+ 
+ 
