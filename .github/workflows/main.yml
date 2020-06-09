@@ -110,9 +110,8 @@ jobs:
         path: ./release # optional
     -
       name: Load version information
-      working-directory: ${{ github.workspace }}
       run: |
-        source ./version.properties
+        source ${{ github.workspace }}/version.properties
         echo "::set-env name=VERSION_NAME::$VERSION_NAME"
         echo "::set-env name=VERSION_CODE::$VERSION_CODE"
     -
