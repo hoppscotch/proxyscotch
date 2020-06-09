@@ -150,16 +150,17 @@ jobs:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           targets: "./release/artifact/windows-*/*.exe"
       -
-        name: Upload Linux Release Assets
+        # Uploads macOS Server and Linux Desktop/Server binaries.
+        name: Upload *NIX Binary Release Assets
         id: upload_release_assets_linux
         uses: NBTX/upload-release-assets@v2.0.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          targets: "./release/artifact/linux-*/*.!(md)"
+          targets: "./release/artifact/(linux-*|darwin-server)/*.!(md)"
       -
-        name: Upload Darwin Release Assets
+        name: Upload macOS Release Assets
         id: upload_release_assets_darwin
         uses: NBTX/upload-release-assets@v2.0.2
         env:
@@ -167,6 +168,3 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           targets: "./release/artifact/darwin-*/*.zip"
- 
- 
- 

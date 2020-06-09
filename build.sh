@@ -2,10 +2,41 @@
 
 TIME_START=$(date +%s)
 
+fcomplete() {
+  TIME_END=$(date +%s)
+  TIME_TAKEN=$(( TIME_END - TIME_START ))
+
+  echo "Done (${TIME_TAKEN}s)."
+  exit 0
+}
+
 if [ $# -lt 1 ]; then
-  echo "Usage: $0 <darwin|linux|windows> [<server|desktop>]"
+  printf "Usage: %s <darwin|linux|windows> [<server|desktop>]   -  Builds Proxywoman for the given platform.\n" "$0"
+  printf "Usage: %s clean                                       -  Cleans the out/ directory.\n" "$0"
   exit 3
 fi
+
+# Ensure the user is in the correct directory (the directory containing this script.)
+if [ "$(pwd)" != "${0%/*}" ]; then
+  cd "${0%/*}" || exit
+fi
+
+. ./version.properties
+
+#
+# COMMAND: clean
+#
+if [ "$1" = "clean" ]; then
+  echo "Cleaning build directory..."
+  rm -rf ./out/*
+
+  fcomplete
+  exit 0
+fi
+
+#
+# COMMAND: build
+#
 
 # Collect parameters.
 PLATFORM="$1"
@@ -26,8 +57,7 @@ elif [ "$BUILD_TYPE" != "desktop" ] && [ "$BUILD_TYPE" != "server" ]; then
 fi
 
 
-# Load version information
-. ./version.properties
+# We're running a build.
 echo "Building Proxywoman $BUILD_TYPE v$VERSION_NAME (build $VERSION_CODE) for $PLATFORM"
 echo "Developed by @NBTX (Apollo Software)"
 echo ""
@@ -47,10 +77,22 @@ if [ "$BUILD_TYPE" = "server" ]; then
 
 	if [ "$PLATFORM" = "windows" ]; then
 		GOOS="$PLATFORM" go build -ldflags "-X main.VersionName=$VERSION_NAME -X main.VersionCode=$VERSION_CODE" -o "$OUTPUT_DIR/proxywoman-server.exe" server/server.go
-	  mv "$OUTPUT_DIR/proxywoman-server.exe" "$OUTPUT_DIR/Proxywoman-Server-Windows-v${VERSION_NAME}.exe"
+	  mv "$OUTPUT_DIR/proxywoman-server.exe" "$OUTPUT_DIR/proxywoman-server-windows-v${VERSION_NAME}.exe"
+
+    # echo "Compressing release binary..."
+    # WORKING_DIR=$(pwd)
+    # cd "$OUTPUT_DIR" || exit 1
+	  # zip -r "proxywoman-server-windows-v${VERSION_NAME}.zip" "proxywoman-server-windows-v${VERSION_NAME}.exe"
+	  # cd "$WORKING_DIR" || exit 1
 	else
 		GOOS="$PLATFORM" go build -ldflags "-X main.VersionName=$VERSION_NAME -X main.VersionCode=$VERSION_CODE" -o "$OUTPUT_DIR/proxywoman-server" server/server.go
 	  mv "$OUTPUT_DIR/proxywoman-server" "$OUTPUT_DIR/proxywoman-server-${PLATFORM}-v${VERSION_NAME}"
+
+	  # echo "Compressing release binary..."
+	  # WORKING_DIR=$(pwd)
+    # cd "$OUTPUT_DIR" || exit 1
+	  # zip -r "proxywoman-server-${PLATFORM}-v${VERSION_NAME}.zip" "proxywoman-server-${PLATFORM}-v${VERSION_NAME}"
+	  # cd "$WORKING_DIR" || exit 1
 	fi
 	exit
 fi
@@ -94,14 +136,14 @@ if [ "$PLATFORM" = "darwin" ]; then
   GOOS="darwin" GO111MODULE=on go build -ldflags "-X main.VersionName=$VERSION_NAME -X main.VersionCode=$VERSION_CODE" -o "$OUTPUT_DIR/Proxywoman.app/Contents/MacOS/postwoman-proxy"
 
   # Produce output binaries
-  mv "$OUTPUT_DIR/Proxywoman.app" "$OUTPUT_DIR/Proxywoman-Darwin-v${VERSION_NAME}.app"
+  mv "$OUTPUT_DIR/Proxywoman.app" "$OUTPUT_DIR/Proxywoman-macOS-v${VERSION_NAME}.app"
 
   # Compressing output binaries
   echo "Compressing output binaries"
-  WORKING_DIR=$(pwd)
 
+  WORKING_DIR=$(pwd)
   cd "$OUTPUT_DIR" || exit 1
-  zip -r "Proxywoman-Darwin-v${VERSION_NAME}.zip" "Proxywoman-Darwin-v${VERSION_NAME}.app"
+  zip -r "Proxywoman-macOS-v${VERSION_NAME}.zip" "Proxywoman-macOS-v${VERSION_NAME}.app"
 
   cd "$WORKING_DIR" || exit 1
 elif [ "$PLATFORM" = "windows" ]; then
@@ -120,14 +162,26 @@ elif [ "$PLATFORM" = "windows" ]; then
   rm rsrc.syso
 
   mv "$OUTPUT_DIR/proxywoman.exe" "$OUTPUT_DIR/Proxywoman-Windows-v${VERSION_NAME}.exe"
+
+  # Compressing output binaries
+  echo "Compressing output binaries"
+
+  # WORKING_DIR=$(pwd)
+  # cd "$OUTPUT_DIR" || exit 1
+  # zip -r "Proxywoman-Windows-v${VERSION_NAME}.zip" "Proxywoman-Windows-v${VERSION_NAME}.exe"
+  # cd "$WORKING_DIR" || exit 1
 elif [ "$PLATFORM" = "linux" ]; then
   echo "NOTICE: Proxywoman is untested and currently unsupported on Linux."
-  GOOS="linux" GO111MODULE=on go build -ldflags "-X main.VersionName=$VERSION_NAME -X main.VersionCode=$VERSION_CODE" -o "$OUTPUT_DIR/proxywoman"
+  GOOS="linux" GO111MODULE=on go build -ldflags "-X main.VersionName=$VERSION_NAME -X main.VersionCode=$VERSION_CODE" -o "$OUTPUT_DIR/Proxywoman-Linux-v${VERSION_NAME}"
+
+  # Compressing output binaries
+  # echo "Compressing output binaries"
+  # WORKING_DIR=$(pwd)
+  # cd "$OUTPUT_DIR" || exit 1
+  # zip -r "Proxywoman-Linux-v${VERSION_NAME}.zip" "Proxywoman-Linux-v${VERSION_NAME}"
+  # cd "$WORKING_DIR" || exit 1
 fi
 
-TIME_END=$(date +%s)
-TIME_TAKEN=$(( TIME_END - TIME_START ))
-
 echo ""
 echo ""
-echo "Done (${TIME_TAKEN}s)."
+fcomplete
