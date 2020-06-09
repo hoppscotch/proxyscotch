@@ -1,5 +1,9 @@
 #!/bin/sh
 
+#
+# Basic Prep...
+#
+
 TIME_START=$(date +%s)
 
 fcomplete() {
@@ -10,18 +14,39 @@ fcomplete() {
   exit 0
 }
 
-if [ $# -lt 1 ]; then
-  printf "Usage: %s <darwin|linux|windows> [<server|desktop>]   -  Builds Proxywoman for the given platform.\n" "$0"
-  printf "Usage: %s clean                                       -  Cleans the out/ directory.\n" "$0"
-  exit 3
-fi
-
 # Ensure the user is in the correct directory (the directory containing this script.)
 if [ "$(pwd)" != "${0%/*}" ]; then
   cd "${0%/*}" || exit
 fi
 
 . ./version.properties
+
+#
+# Print Banner
+#
+printf "  _____                                                         \n";
+printf " |  __ \                                                        \n";
+printf " | |__) | __ _____  ___   ___      _____  _ __ ___   __ _ _ __  \n";
+printf " |  ___/ '__/ _ \ \/ / | | \ \ /\ / / _ \| '_ \` _ \ / _\` | '_ \ \n";
+printf " | |   | | | (_) >  <| |_| |\ V  V / (_) | | | | | | (_| | | | |\n";
+printf " |_|   |_|  \___/_/\_\\__, | \_/\_/ \___/|_| |_| |_|\__,_|_| |_|\n";
+printf "                       __/ |                                    \n";
+printf "                      |___/                                     \n";
+printf "\n";
+printf "v%s -- a Postwoman project - https://postwoman.io/\n" "$VERSION_NAME";
+printf "Built by NBTX (Apollo Software) - https://apollosoftware.xyz/\n";
+printf "\n";
+printf "\n";
+
+#
+# Start Build Script
+#
+
+if [ $# -lt 1 ]; then
+  printf "Usage: %s <darwin|linux|windows> [<server|desktop>]   -  Builds Proxywoman for the given platform.\n" "$0"
+  printf "Usage: %s clean                                       -  Cleans the out/ directory.\n" "$0"
+  exit 3
+fi
 
 #
 # COMMAND: clean
