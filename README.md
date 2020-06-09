@@ -12,7 +12,7 @@
 A simple proxy server created by [@NBTX](https://github.com/NBTX/) for [Postwoman](https://github.com/liyasthomas/postwoman/) and hosted by [Apollo Software](https://apollosoftware.xyz/).
 
 ## Installation 📦
-**Proxywoman require `zenity` on Linux. This is available in most distribution package managers.**
+**Proxywoman requires `zenity` on Linux. This is available in most distribution package managers.**
 
 We're still working on automated installers. For now, copy the binary to a user-writeable location and launch the application.  
 A dialog will open and explain the certificate installation process - there are more detailed instructions in our [wiki](https://github.com/postwoman-io/proxywoman/wiki).
