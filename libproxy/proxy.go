@@ -67,11 +67,12 @@ func Initialize(
 
         err := EnsurePrivateKeyInstalled();
         if err != nil {
+            log.Println(err.Error());
             onStatusChange("An error occurred.", false);
         }
 
         go func() {
-            httpServerError := http.ListenAndServeTLS(proxyURL, GetDataPath() + "/cert.pem", GetDataPath() + "/key.pem", nil);
+            httpServerError := http.ListenAndServeTLS(proxyURL, GetOrCreateDataPath() + "/cert.pem", GetOrCreateDataPath() + "/key.pem", nil);
 
             if httpServerError != nil {
                 onStatusChange("An error occurred.", false);

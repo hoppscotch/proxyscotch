@@ -171,7 +171,6 @@ elif [ "$PLATFORM" = "windows" ]; then
   # zip -r "Proxywoman-Windows-v${VERSION_NAME}.zip" "Proxywoman-Windows-v${VERSION_NAME}.exe"
   # cd "$WORKING_DIR" || exit 1
 elif [ "$PLATFORM" = "linux" ]; then
-  echo "NOTICE: Proxywoman is untested and currently unsupported on Linux."
   GOOS="linux" GO111MODULE=on go build -ldflags "-X main.VersionName=$VERSION_NAME -X main.VersionCode=$VERSION_CODE" -o "$OUTPUT_DIR/Proxywoman-Linux-v${VERSION_NAME}"
 
   # Compressing output binaries
