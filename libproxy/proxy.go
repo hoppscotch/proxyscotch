@@ -1,6 +1,7 @@
 package libproxy
 
 import (
+    base64 "encoding/base64"
     "encoding/json"
     "fmt"
     "io/ioutil"
@@ -16,9 +17,11 @@ import (
 type statusChangeFunction func(status string, isListening bool);
 var accessToken string;
 var sessionFingerprint string;
+var allowedOrigins[] string;
 
 type Request struct {
     AccessToken string;
+    WantsBinary bool;
     Method string;
     Url string;
     Auth struct {
@@ -32,25 +35,38 @@ type Request struct {
 type Response struct {
     Success bool                `json:"success"`;
     Data string                 `json:"data"`;
+    IsBinary bool               `json:"isBinary"`;
     Status int                  `json:"status"`;
     StatusText string           `json:"statusText"`;
     Headers map[string]string   `json:"headers"`;
 }
 
+func isAllowedOrigin(origin string) bool {
+    for _, b := range allowedOrigins {
+        if b == origin {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 func Initialize(
     initialAccessToken string,
     proxyURL string,
+    initialAllowedOrigins string,
     onStatusChange statusChangeFunction,
     withSSL bool,
     finished chan bool,
 ) {
+    allowedOrigins = strings.Split(initialAllowedOrigins, ",");
     accessToken = initialAccessToken;
     sessionFingerprint = uuid.New().String()
     log.Println("Starting proxy server...");
 
     http.HandleFunc("/", proxyHandler);
 
-    if(!withSSL){
+    if !withSSL {
         go func() {
             httpServerError := http.ListenAndServe(proxyURL, nil);
 
@@ -93,16 +109,35 @@ func SetAccessToken(newAccessToken string) {
 }
 
 func proxyHandler(response http.ResponseWriter, request *http.Request) {
+
     // We want to allow all types of requests to the proxy, though we only want to allow certain
     // origins.
-    response.Header().Add("Access-Control-Allow-Origin", "https://postwoman.io");
     response.Header().Add("Access-Control-Allow-Headers", "*");
     if request.Method == "OPTIONS" {
+        response.Header().Add("Access-Control-Allow-Origin", "*");
         response.WriteHeader(200);
         return;
     }
 
-    // Then, for anything other than an POST request, we'll return an empty JSON object.
+    if request.Header.Get("Origin") == "" || !isAllowedOrigin(request.Header.Get("Origin")) {
+        if strings.HasPrefix(request.Header.Get("Content-Type"), "application/json") {
+            response.Header().Add("Access-Control-Allow-Headers", "*");
+            response.Header().Add("Access-Control-Allow-Origin", "*");
+            response.WriteHeader(200);
+            _, _ = fmt.Fprintln(response, "{\"success\": false, \"data\":{\"message\":\"(Proxy Error) Request failed.\"}}");
+            return;
+        }
+
+        // If it is not an allowed origin, redirect back to postwoman.io.
+        response.Header().Add("Location", "https://postwoman.io/");
+        response.WriteHeader(301);
+        return;
+    } else {
+        // Otherwise set the appropriate CORS polciy and continue.
+        response.Header().Add("Access-Control-Allow-Origin", request.Header.Get("Origin"));
+    }
+
+    // For anything other than an POST request, we'll return an empty JSON object.
     response.Header().Add("Content-Type", "application/json; charset=utf-8");
     if request.Method != "POST" {
         _, _ = fmt.Fprintln(response, "{\"success\": true, \"data\":{\"sessionFingerprint\":\"" + sessionFingerprint + "\", \"isProtected\":" + strconv.FormatBool(len(accessToken) > 0) + "}}");
@@ -152,8 +187,16 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
     responseData.Status = proxyResponse.StatusCode;
     responseData.StatusText = strings.Join(strings.Split(proxyResponse.Status, " ")[1:], " ");
     responseBytes, err := ioutil.ReadAll(proxyResponse.Body);
-    responseData.Data = string(responseBytes);
     responseData.Headers = headerToArray(proxyResponse.Header);
+
+    if requestData.WantsBinary {
+        // If using the new binary format, encode the response body.
+        responseData.Data = base64.StdEncoding.EncodeToString(responseBytes);
+        responseData.IsBinary = true;
+    } else {
+        // Otherwise, simply return the old format.
+        responseData.Data = string(responseBytes);
+    }
 
     // Write the request body to the response.
     err = json.NewEncoder(response).Encode(responseData);
@@ -164,6 +207,7 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
         _, _ = fmt.Fprintln(response, "{\"success\": false, \"data\":{\"message\":\"(Proxy Error) Request failed.\"}}");
         return;
     }
+
 }
 
 ///
