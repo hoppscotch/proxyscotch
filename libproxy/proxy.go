@@ -1,7 +1,8 @@
 package libproxy
 
 import (
-    base64 "encoding/base64"
+    "bytes"
+    "encoding/base64"
     "encoding/json"
     "fmt"
     "io/ioutil"
@@ -18,6 +19,7 @@ type statusChangeFunction func(status string, isListening bool);
 var accessToken string;
 var sessionFingerprint string;
 var allowedOrigins[] string;
+var bannedOutputs[] string;
 
 type Request struct {
     AccessToken string;
@@ -42,6 +44,10 @@ type Response struct {
 }
 
 func isAllowedOrigin(origin string) bool {
+    if allowedOrigins[0] == "*" {
+        return true;
+    }
+
     for _, b := range allowedOrigins {
         if b == origin {
             return true;
@@ -55,10 +61,14 @@ func Initialize(
     initialAccessToken string,
     proxyURL string,
     initialAllowedOrigins string,
+    initialBannedOutputs string,
     onStatusChange statusChangeFunction,
     withSSL bool,
     finished chan bool,
 ) {
+    if initialBannedOutputs != "" {
+        bannedOutputs = strings.Split(initialBannedOutputs, ",")
+    };
     allowedOrigins = strings.Split(initialAllowedOrigins, ",");
     accessToken = initialAccessToken;
     sessionFingerprint = uuid.New().String()
@@ -173,6 +183,8 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
         proxyRequest.Header.Set(k, v);
     }
 
+    proxyRequest.Header.Set("User-Agent", "Proxywoman/1.0");
+
     if(len(requestData.Data) > 0) {
         proxyRequest.Body = ioutil.NopCloser(strings.NewReader(requestData.Data));
         proxyRequest.Body.Close();
@@ -190,12 +202,24 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
     responseData.Headers = headerToArray(proxyResponse.Header);
 
     if requestData.WantsBinary {
+        if bannedOutputs != nil {
+            for _, bannedOutput := range bannedOutputs {
+                responseBytes = bytes.ReplaceAll(responseBytes, []byte(bannedOutput), []byte("[redacted]"));
+            }
+        }
+
         // If using the new binary format, encode the response body.
         responseData.Data = base64.StdEncoding.EncodeToString(responseBytes);
         responseData.IsBinary = true;
     } else {
         // Otherwise, simply return the old format.
         responseData.Data = string(responseBytes);
+
+        if bannedOutputs != nil {
+            for _, bannedOutput := range bannedOutputs {
+                responseData.Data = strings.Replace(responseData.Data, bannedOutput, "[redacted]", -1);
+            }
+        }
     }
 
     // Write the request body to the response.
@@ -219,7 +243,7 @@ func headerToArray(header http.Header) (res map[string]string) {
 
     for name, values := range header {
         for _, value := range values {
-            res[name] = value;
+            res[strings.ToLower(name)] = value;
         }
     }
 

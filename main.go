@@ -96,7 +96,7 @@ func onExit() {
 }
 
 func runPostwomanProxy() {
-    libproxy.Initialize("postwoman", "127.0.0.1:9159", "https://postwoman.io", onProxyStateChange, true, nil);
+    libproxy.Initialize("postwoman", "127.0.0.1:9159", "https://postwoman.io", "", onProxyStateChange, true, nil);
 }
 
 func onProxyStateChange(status string, isListening bool){
