@@ -194,6 +194,12 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
     var proxyResponse *http.Response;
     proxyResponse, err = client.Do(&proxyRequest);
 
+    if err != nil {
+        log.Printf("Failed to write response body: %v. %d bytes written.", err);
+        _, _ = fmt.Fprintln(response, "{\"success\": false, \"data\":{\"message\":\"(Proxy Error) Request failed.\"}}");
+        return;
+    }
+
     var responseData Response;
     responseData.Success = true;
     responseData.Status = proxyResponse.StatusCode;
