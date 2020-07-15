@@ -215,7 +215,7 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
         }
 
         // If using the new binary format, encode the response body.
-        responseData.Data = base64.StdEncoding.EncodeToString(responseBytes);
+        responseData.Data = base64.RawStdEncoding.EncodeToString(responseBytes);
         responseData.IsBinary = true;
     } else {
         // Otherwise, simply return the old format.
