@@ -1,5 +1,5 @@
 <div align="center">
-  <a href="https://postwoman.io"><img src="https://postwoman.io/icons/logo.svg" alt="Postwoman" height="128"></a>
+  <a href="https://postwoman.io"><img src="https://hoppscotch.io/icon.png" alt="Postwoman" height="128"></a>
   <br>
   <h1>Proxywoman</h1>
   <p>
