@@ -1,10 +1,10 @@
 FROM golang:alpine
 
-LABEL maintainer="marcel.parciak@gmail.com"
+LABEL maintainer="me+proxyscotch@samjakob.com"
 
-WORKDIR /etc/postwoman-proxy
+WORKDIR /etc/proxyscotch
 
-COPY . /etc/postwoman-proxy
+COPY . /etc/proxyscotch
 RUN ./build.sh linux server
 
 EXPOSE 9159/tcp
@@ -12,4 +12,4 @@ EXPOSE 9159/tcp
 # this should be a standard user with the users group on alpine
 USER 1000:100
 
-CMD ["sh", "-c", "/etc/postwoman-proxy/out/linux-server/postwoman-proxy-server --host 0.0.0.0:9159"]
+CMD ["sh", "-c", "/etc/proxyscotch/out/linux-server/proxyscotch-server-* --host 0.0.0.0:9159"]

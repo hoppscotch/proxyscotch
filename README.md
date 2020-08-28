@@ -1,7 +1,7 @@
 <div align="center">
-  <a href="https://postwoman.io"><img src="https://hoppscotch.io/icon.png" alt="Postwoman" height="128"></a>
+  <a href="https://hoppscotch.io"><img src="https://hoppscotch.io/icon.png" alt="Hoppscotch" height="128"></a>
   <br>
-  <h1>Proxywoman</h1>
+  <h1>Proxyscotch</h1>
   <p>
     API request builder - Helps you create your requests faster, saving you precious time on your development.
   </p>
@@ -9,16 +9,16 @@
 
 ---
 
-A simple proxy server created by [@NBTX](https://github.com/NBTX/) for [Postwoman](https://github.com/liyasthomas/postwoman/) and hosted by [Apollo Software](https://apollosoftware.xyz/).
+A simple proxy server created by [@NBTX](https://github.com/NBTX/) for [Hoppscotch](https://github.com/hoppscotch/hoppscotch/) and hosted by [Apollo Software](https://apollosoftware.xyz/).
 
 ## Installation 📦
-**Proxywoman requires `zenity` on Linux. This is available in most distribution package managers.**
+**Proxyscotch requires `zenity` on Linux. This is available in most distribution package managers.**
 
 We're still working on automated installers. For now, copy the binary to a user-writeable location and launch the application.  
-A dialog will open and explain the certificate installation process - there are more detailed instructions in our [wiki](https://github.com/postwoman-io/proxywoman/wiki).
+A dialog will open and explain the certificate installation process - there are more detailed instructions in our [wiki](https://github.com/hoppscotch/proxyscotch/wiki).
 
 ## Demo 🚀
-[https://postwoman.io](https://postwoman.io)
+[https://hoppscotch.io](https://hoppscotch.io)
 
 
 ## Building 🏗️
