@@ -24,16 +24,16 @@ fi
 #
 # Print Banner
 #
-printf "  _____                                                         \n";
-printf " |  __ \                                                        \n";
-printf " | |__) | __ _____  ___   ___      _____  _ __ ___   __ _ _ __  \n";
-printf " |  ___/ '__/ _ \ \/ / | | \ \ /\ / / _ \| '_ \` _ \ / _\` | '_ \ \n";
-printf " | |   | | | (_) >  <| |_| |\ V  V / (_) | | | | | | (_| | | | |\n";
-printf " |_|   |_|  \___/_/\_\\__, | \_/\_/ \___/|_| |_| |_|\__,_|_| |_|\n";
-printf "                       __/ |                                    \n";
-printf "                      |___/                                     \n";
+echo "______                                  _       _     ";
+echo "| ___ \                                | |     | |    ";
+echo "| |_/ / __ _____  ___   _ ___  ___ ___ | |_ ___| |__  ";
+echo "|  __/ '__/ _ \ \/ / | | / __|/ __/ _ \| __/ __| '_ \ ";
+echo "| |  | | | (_) >  <| |_| \__ \ (_| (_) | || (__| | | |";
+echo "\_|  |_|  \___/_/\_\\__, |___/\___\___/ \__\___|_| |_|";
+echo "                     __/ |                            ";
+echo "                    |___/                             ";
 printf "\n";
-printf "v%s -- a Postwoman project - https://postwoman.io/\n" "$VERSION_NAME";
+printf "v%s -- a Hoppscotch.io project - https://hoppscotch.io/\n" "$VERSION_NAME";
 printf "Built by NBTX (Apollo Software) - https://apollosoftware.xyz/\n";
 printf "\n";
 printf "\n";
@@ -43,7 +43,7 @@ printf "\n";
 #
 
 if [ $# -lt 1 ]; then
-  printf "Usage: %s <darwin|linux|windows> [<server|desktop>]   -  Builds Proxywoman for the given platform.\n" "$0"
+  printf "Usage: %s <darwin|linux|windows> [<server|desktop>]   -  Builds Proxyscotch for the given platform.\n" "$0"
   printf "Usage: %s clean                                       -  Cleans the out/ directory.\n" "$0"
   exit 3
 fi
@@ -175,7 +175,7 @@ fi
 
 
 # We're running a build.
-echo "Building Proxywoman $BUILD_TYPE v$VERSION_NAME (build $VERSION_CODE) for $PLATFORM"
+echo "Building Proxyscotch $BUILD_TYPE v$VERSION_NAME (build $VERSION_CODE) for $PLATFORM"
 echo "Developed by @NBTX (Apollo Software)"
 echo ""
 echo ""
@@ -193,22 +193,22 @@ if [ "$BUILD_TYPE" = "server" ]; then
   echo "Executing go build..."
 
 	if [ "$PLATFORM" = "windows" ]; then
-		GOOS="$PLATFORM" go build -ldflags "-X main.VersionName=$VERSION_NAME -X main.VersionCode=$VERSION_CODE" -o "$OUTPUT_DIR/proxywoman-server.exe" server/server.go
-	  mv "$OUTPUT_DIR/proxywoman-server.exe" "$OUTPUT_DIR/proxywoman-server-windows-v${VERSION_NAME}.exe"
+		GOOS="$PLATFORM" go build -ldflags "-X main.VersionName=$VERSION_NAME -X main.VersionCode=$VERSION_CODE" -o "$OUTPUT_DIR/proxyscotch-server.exe" server/server.go
+	  mv "$OUTPUT_DIR/proxyscotch-server.exe" "$OUTPUT_DIR/proxyscotch-server-windows-v${VERSION_NAME}.exe"
 
     # echo "Compressing release binary..."
     # WORKING_DIR=$(pwd)
     # cd "$OUTPUT_DIR" || exit 1
-	  # zip -r "proxywoman-server-windows-v${VERSION_NAME}.zip" "proxywoman-server-windows-v${VERSION_NAME}.exe"
+	  # zip -r "proxyscotch-server-windows-v${VERSION_NAME}.zip" "proxyscotch-server-windows-v${VERSION_NAME}.exe"
 	  # cd "$WORKING_DIR" || exit 1
 	else
-		GOOS="$PLATFORM" go build -ldflags "-X main.VersionName=$VERSION_NAME -X main.VersionCode=$VERSION_CODE" -o "$OUTPUT_DIR/proxywoman-server" server/server.go
-	  mv "$OUTPUT_DIR/proxywoman-server" "$OUTPUT_DIR/proxywoman-server-${PLATFORM}-v${VERSION_NAME}"
+		GOOS="$PLATFORM" go build -ldflags "-X main.VersionName=$VERSION_NAME -X main.VersionCode=$VERSION_CODE" -o "$OUTPUT_DIR/proxyscotch-server" server/server.go
+	  mv "$OUTPUT_DIR/proxyscotch-server" "$OUTPUT_DIR/proxyscotch-server-${PLATFORM}-v${VERSION_NAME}"
 
 	  # echo "Compressing release binary..."
 	  # WORKING_DIR=$(pwd)
     # cd "$OUTPUT_DIR" || exit 1
-	  # zip -r "proxywoman-server-${PLATFORM}-v${VERSION_NAME}.zip" "proxywoman-server-${PLATFORM}-v${VERSION_NAME}"
+	  # zip -r "proxyscotch-server-${PLATFORM}-v${VERSION_NAME}.zip" "proxyscotch-server-${PLATFORM}-v${VERSION_NAME}"
 	  # cd "$WORKING_DIR" || exit 1
 	fi
 	exit
@@ -247,54 +247,54 @@ find "$OUTPUT_DIR" -type f -print0 | xargs -0 perl -pi -e "s/\\\$VERSION_CODE/$V
 echo "Executing go build..."
 
 if [ "$PLATFORM" = "darwin" ]; then
-  mkdir -p "$OUTPUT_DIR/Proxywoman.app/Contents/MacOS"
-  mkdir -p "$OUTPUT_DIR/Proxywoman.app/Contents/MacOS/icons"
-  cp icons/icon.png "$OUTPUT_DIR/Proxywoman.app/Contents/MacOS/icons/"
-  GOOS="darwin" GO111MODULE=on go build -ldflags "-X main.VersionName=$VERSION_NAME -X main.VersionCode=$VERSION_CODE" -o "$OUTPUT_DIR/Proxywoman.app/Contents/MacOS/postwoman-proxy"
+  mkdir -p "$OUTPUT_DIR/Proxyscotch.app/Contents/MacOS"
+  mkdir -p "$OUTPUT_DIR/Proxyscotch.app/Contents/MacOS/icons"
+  cp icons/icon.png "$OUTPUT_DIR/Proxyscotch.app/Contents/MacOS/icons/"
+  GOOS="darwin" GO111MODULE=on go build -ldflags "-X main.VersionName=$VERSION_NAME -X main.VersionCode=$VERSION_CODE" -o "$OUTPUT_DIR/Proxyscotch.app/Contents/MacOS/proxyscotch"
 
   # Produce output binaries
-  mv "$OUTPUT_DIR/Proxywoman.app" "$OUTPUT_DIR/Proxywoman-macOS-v${VERSION_NAME}.app"
+  mv "$OUTPUT_DIR/Proxyscotch.app" "$OUTPUT_DIR/Proxyscotch-macOS-v${VERSION_NAME}.app"
 
   # Compressing output binaries
   echo "Compressing output binaries"
 
   WORKING_DIR=$(pwd)
   cd "$OUTPUT_DIR" || exit 1
-  zip -r "Proxywoman-macOS-v${VERSION_NAME}.zip" "Proxywoman-macOS-v${VERSION_NAME}.app"
+  zip -r "Proxyscotch-macOS-v${VERSION_NAME}.zip" "Proxyscotch-macOS-v${VERSION_NAME}.app"
 
   cd "$WORKING_DIR" || exit 1
 elif [ "$PLATFORM" = "windows" ]; then
   [ -f "rsrc.syso" ] && rm rsrc.syso
   go get github.com/akavel/rsrc
 
-  rsrc -manifest="$OUTPUT_DIR/postwoman-proxy.manifest" -ico="icons/icon.ico" -o rsrc.syso
-  GOOS="windows" GO111MODULE=on go build -ldflags "-X main.VersionName=$VERSION_NAME -X main.VersionCode=$VERSION_CODE -H=windowsgui" -o "$OUTPUT_DIR/proxywoman.exe"
+  rsrc -manifest="$OUTPUT_DIR/proxyscotch.manifest" -ico="icons/icon.ico" -o rsrc.syso
+  GOOS="windows" GO111MODULE=on go build -ldflags "-X main.VersionName=$VERSION_NAME -X main.VersionCode=$VERSION_CODE -H=windowsgui" -o "$OUTPUT_DIR/proxyscotch.exe"
 
   mkdir "$OUTPUT_DIR/icons"
   cp icons/icon.png "$OUTPUT_DIR/icons/icon.png"
 
   mkdir "$OUTPUT_DIR/data"
 
-  rm "$OUTPUT_DIR/postwoman-proxy.manifest"
+  rm "$OUTPUT_DIR/proxyscotch.manifest"
   rm rsrc.syso
 
-  mv "$OUTPUT_DIR/proxywoman.exe" "$OUTPUT_DIR/Proxywoman-Windows-v${VERSION_NAME}.exe"
+  mv "$OUTPUT_DIR/proxyscotch.exe" "$OUTPUT_DIR/Proxyscotch-Windows-v${VERSION_NAME}.exe"
 
   # Compressing output binaries
   echo "Compressing output binaries"
 
   # WORKING_DIR=$(pwd)
   # cd "$OUTPUT_DIR" || exit 1
-  # zip -r "Proxywoman-Windows-v${VERSION_NAME}.zip" "Proxywoman-Windows-v${VERSION_NAME}.exe"
+  # zip -r "Proxyscotch-Windows-v${VERSION_NAME}.zip" "Proxyscotch-Windows-v${VERSION_NAME}.exe"
   # cd "$WORKING_DIR" || exit 1
 elif [ "$PLATFORM" = "linux" ]; then
-  GOOS="linux" GO111MODULE=on go build -ldflags "-X main.VersionName=$VERSION_NAME -X main.VersionCode=$VERSION_CODE" -o "$OUTPUT_DIR/Proxywoman-Linux-v${VERSION_NAME}"
+  GOOS="linux" GO111MODULE=on go build -ldflags "-X main.VersionName=$VERSION_NAME -X main.VersionCode=$VERSION_CODE" -o "$OUTPUT_DIR/Proxyscotch-Linux-v${VERSION_NAME}"
 
   # Compressing output binaries
   # echo "Compressing output binaries"
   # WORKING_DIR=$(pwd)
   # cd "$OUTPUT_DIR" || exit 1
-  # zip -r "Proxywoman-Linux-v${VERSION_NAME}.zip" "Proxywoman-Linux-v${VERSION_NAME}"
+  # zip -r "Proxyscotch-Linux-v${VERSION_NAME}.zip" "Proxyscotch-Linux-v${VERSION_NAME}"
   # cd "$WORKING_DIR" || exit 1
 fi
 

@@ -5,17 +5,17 @@
 	<key>LSBackgroundOnly</key>
 	<true/>
 	<key>CFBundleDisplayName</key>
-	<string>Proxywoman</string>
+	<string>Proxyscotch</string>
 	<key>CFBundleExecutable</key>
-	<string>postwoman-proxy</string>
+	<string>proxyscotch</string>
 	<key>CFBundleIconFile</key>
-	<string>postwoman.icns</string>
+	<string>proxyscotch.icns</string>
 	<key>CFBundleIdentifier</key>
-	<string>io.postwoman.proxy</string>
+	<string>io.hoppscotch.proxy</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>Proxywoman</string>
+	<string>Proxyscotch</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -29,7 +29,7 @@
 	<key>NSSupportsAutomaticGraphicsSwitching</key>
 	<true/>
 	<key>NSHumanReadableCopyright</key>
-	<string>MIT License; The Postwoman Project</string>
+	<string>MIT License; Hoppscotch.io</string>
 	<!-- avoid having a blurry icon and text -->
     <key>NSHighResolutionCapable</key>
     <true/>
