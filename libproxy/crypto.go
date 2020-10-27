@@ -9,7 +9,6 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/pem"
-	"github.com/gen2brain/dlgs"
 	"io/ioutil"
 	"log"
 	"math/big"
@@ -19,6 +18,8 @@ import (
 	"path/filepath"
 	"runtime"
 	"time"
+
+	"github.com/gen2brain/dlgs"
 )
 
 func publicKeyOf(priv interface{}) interface{} {
@@ -45,85 +46,88 @@ func CreateKeyPair() *[2]bytes.Buffer {
 		},
 		NotBefore: time.Now(),
 		// Make certificate expire after 10 years.
-		NotAfter:  time.Now().Add(time.Hour * 24 * 3650),
+		NotAfter: time.Now().Add(time.Hour * 24 * 3650),
 
 		KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
 		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
 		BasicConstraintsValid: true,
 	}
 
-	template.IPAddresses = append(template.IPAddresses, net.ParseIP("127.0.0.1"));
+	template.IPAddresses = append(template.IPAddresses, net.ParseIP("127.0.0.1"))
 
-	derBytes, err := x509.CreateCertificate(rand.Reader, &template, &template, publicKeyOf(private), private);
+	derBytes, err := x509.CreateCertificate(rand.Reader, &template, &template, publicKeyOf(private), private)
 	if err != nil {
-		log.Fatalf("Failed to create certificate: %s", err);
+		log.Fatalf("Failed to create certificate: %s", err)
 	}
 
-	keypair := new([2]bytes.Buffer);
+	keypair := new([2]bytes.Buffer)
 
-	certificatePairItem := &bytes.Buffer{};
-	_ = pem.Encode(certificatePairItem, &pem.Block{Type: "CERTIFICATE", Bytes: derBytes});
-	keypair[0] = *certificatePairItem;
+	certificatePairItem := &bytes.Buffer{}
+	_ = pem.Encode(certificatePairItem, &pem.Block{Type: "CERTIFICATE", Bytes: derBytes})
+	keypair[0] = *certificatePairItem
 
-	privatePairItem := &bytes.Buffer{};
-	privBytes, _ := x509.MarshalPKCS8PrivateKey(private);
-	_ = pem.Encode(privatePairItem, &pem.Block{Type: "PRIVATE KEY", Bytes: privBytes });
-	keypair[1] = *privatePairItem;
+	privatePairItem := &bytes.Buffer{}
+	privBytes, _ := x509.MarshalPKCS8PrivateKey(private)
+	_ = pem.Encode(privatePairItem, &pem.Block{Type: "PRIVATE KEY", Bytes: privBytes})
+	keypair[1] = *privatePairItem
 
-	return keypair;
+	return keypair
 }
 
-func EnsurePrivateKeyInstalled () error {
-	_, err := os.Stat(GetOrCreateDataPath() + "/cert.pem");
-	_, err = os.Stat(GetOrCreateDataPath() + "/key.pem");
-
+func EnsurePrivateKeyInstalled() error {
+	_, err := os.Stat(GetOrCreateDataPath() + "/cert.pem")
+	if !os.IsNotExist(err) {
+		_, err = os.Stat(GetOrCreateDataPath() + "/key.pem")
+	}
 	// If the error is that the file does not exist, create the file
 	// and then return no error (unless one was thrown in the process of creating the key.)
 	if os.IsNotExist(err) {
-		encodedPEM := CreateKeyPair();
-		err = ioutil.WriteFile(GetOrCreateDataPath() + "/cert.pem", encodedPEM[0].Bytes(), 0600);
-		err = ioutil.WriteFile(GetOrCreateDataPath() + "/key.pem", encodedPEM[1].Bytes(), 0600);
+		encodedPEM := CreateKeyPair()
+		err = ioutil.WriteFile(GetOrCreateDataPath()+"/cert.pem", encodedPEM[0].Bytes(), 0600)
+		if err != nil {
+			err = ioutil.WriteFile(GetOrCreateDataPath()+"/key.pem", encodedPEM[1].Bytes(), 0600)
+		}
 
 		if runtime.GOOS == "windows" {
 			// Windows doesn't recognize .pem as certificates, but we can simply write the PEM data
 			// into a .cer file and it works just fine!
-			err = ioutil.WriteFile(GetOrCreateDataPath() + "/cert.cer", encodedPEM[0].Bytes(), 0600);
+			err = ioutil.WriteFile(GetOrCreateDataPath()+"/cert.cer", encodedPEM[0].Bytes(), 0600)
 		}
 
 		if err == nil {
 			if runtime.GOOS == "darwin" {
-				_ = exec.Command("open", GetOrCreateDataPath()).Run();
-				_, err = dlgs.Warning("Proxywoman", "Proxywoman needs you to install a root certificate authority (cert.pem).\nPlease double-click the certificate file to open it in Keychain Access and follow the installation and trust process.\n\nFor more information about this process and why it's required, please click the Postwoman icon in the status tray and select 'Help'.\n\nClick OK when you have installed the certificate and marked it as trusted.");
+				_ = exec.Command("open", GetOrCreateDataPath()).Run()
+				_, err = dlgs.Warning("Proxywoman", "Proxywoman needs you to install a root certificate authority (cert.pem).\nPlease double-click the certificate file to open it in Keychain Access and follow the installation and trust process.\n\nFor more information about this process and why it's required, please click the Postwoman icon in the status tray and select 'Help'.\n\nClick OK when you have installed the certificate and marked it as trusted.")
 			}
 
 			if runtime.GOOS == "windows" {
-				_ = exec.Command("explorer.exe", GetOrCreateDataPath()+string(os.PathSeparator)+"cert.cer").Run();
-				_, err = dlgs.Warning("Proxywoman", "Proxywoman needs you to install a root certificate authority (cert.cer).\nPlease install the certificate (opened) into the 'Trusted Root Certification Authorities' store for the Local Machine.\n\nFor more information about this process and why it's required, please click the Postwoman icon in the system tray and select 'Help'.\n\nClick OK when you have installed the certificate and marked it as trusted.");
+				_ = exec.Command("explorer.exe", GetOrCreateDataPath()+string(os.PathSeparator)+"cert.cer").Run()
+				_, err = dlgs.Warning("Proxywoman", "Proxywoman needs you to install a root certificate authority (cert.cer).\nPlease install the certificate (opened) into the 'Trusted Root Certification Authorities' store for the Local Machine.\n\nFor more information about this process and why it's required, please click the Postwoman icon in the system tray and select 'Help'.\n\nClick OK when you have installed the certificate and marked it as trusted.")
 			}
 
 			if runtime.GOOS == "linux" {
-				_ = exec.Command("xdg-open", GetOrCreateDataPath()).Run();
-				_, err = dlgs.Warning("Proxywoman", "Proxywoman needs you to install a root certificate authority (cert.pem).\n[INSTRUCTIONS PENDING]\n\nFor more information about this process and why it's required, please click the Postwoman icon in the status tray and select 'Help'.\n\nClick OK when you have installed the certificate and marked it as trusted.");
+				_ = exec.Command("xdg-open", GetOrCreateDataPath()).Run()
+				_, err = dlgs.Warning("Proxywoman", "Proxywoman needs you to install a root certificate authority (cert.pem).\n[INSTRUCTIONS PENDING]\n\nFor more information about this process and why it's required, please click the Postwoman icon in the status tray and select 'Help'.\n\nClick OK when you have installed the certificate and marked it as trusted.")
 			}
 		}
 
-		return err;
+		return err
 	}
 	// Otherwise return any errors that may have occurred.
 	// (This is nil if no errors occurred.)
-	return err;
+	return err
 }
 
 func GetOrCreateDataPath() string {
-	dir, _ := filepath.Abs(filepath.Dir(os.Args[0]));
+	dir, _ := filepath.Abs(filepath.Dir(os.Args[0]))
 
-	dataDir := dir + string(os.PathSeparator) + "data";
+	dataDir := dir + string(os.PathSeparator) + "data"
 
 	// If the data directory stat fails because the direcotry does not exist,
 	// create the data directory.
 	if _, err := os.Stat(dataDir); os.IsNotExist(err) {
-		_ = os.Mkdir(dataDir, 0700);
+		_ = os.Mkdir(dataDir, 0700)
 	}
 
-	return dataDir;
+	return dataDir
 }

@@ -5,11 +5,11 @@ import (
 	"path/filepath"
 )
 
-func GetIcon () string {
-	return GetIconPath() + "/icon.png";
+func GetIcon() string {
+	return GetIconPath() + "/icon.png"
 }
 
 func GetIconPath() string {
-	dir, _ := filepath.Abs(filepath.Dir(os.Args[0]));
-	return dir + "/icons";
+	dir, _ := filepath.Abs(filepath.Dir(os.Args[0]))
+	return dir + "/icons"
 }
