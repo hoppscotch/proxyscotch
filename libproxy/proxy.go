@@ -197,7 +197,7 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
 	proxyResponse, err = client.Do(&proxyRequest)
 
 	if err != nil {
-		log.Printf("Failed to write response body: %v. %d bytes written.", err)
+		log.Print("Failed to write response body: ", err.Error())
 		_, _ = fmt.Fprintln(response, "{\"success\": false, \"data\":{\"message\":\"(Proxy Error) Request failed.\"}}")
 		return
 	}
@@ -210,10 +210,8 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
 	responseData.Headers = headerToArray(proxyResponse.Header)
 
 	if requestData.WantsBinary {
-		if bannedOutputs != nil {
-			for _, bannedOutput := range bannedOutputs {
-				responseBytes = bytes.ReplaceAll(responseBytes, []byte(bannedOutput), []byte("[redacted]"))
-			}
+		for _, bannedOutput := range bannedOutputs {
+			responseBytes = bytes.ReplaceAll(responseBytes, []byte(bannedOutput), []byte("[redacted]"))
 		}
 
 		// If using the new binary format, encode the response body.
@@ -223,10 +221,8 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
 		// Otherwise, simply return the old format.
 		responseData.Data = string(responseBytes)
 
-		if bannedOutputs != nil {
-			for _, bannedOutput := range bannedOutputs {
-				responseData.Data = strings.Replace(responseData.Data, bannedOutput, "[redacted]", -1)
-			}
+		for _, bannedOutput := range bannedOutputs {
+			responseData.Data = strings.Replace(responseData.Data, bannedOutput, "[redacted]", -1)
 		}
 	}
 
@@ -235,16 +231,14 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
 
 	// Return the response.
 	if err != nil {
-		log.Printf("Failed to write response body: %v. %d bytes written.", err)
+		log.Print("Failed to write response body: ", err.Error())
 		_, _ = fmt.Fprintln(response, "{\"success\": false, \"data\":{\"message\":\"(Proxy Error) Request failed.\"}}")
 		return
 	}
 }
 
-///
 /// Converts http.Header to a map.
-/// Original Source: https://stackoverflow.com/a/37030039/2872279 (modified)
-///
+/// Original Source: https://stackoverflow.com/a/37030039/2872279 (modified).
 func headerToArray(header http.Header) (res map[string]string) {
 	res = make(map[string]string)
 
