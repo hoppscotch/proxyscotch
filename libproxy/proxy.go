@@ -140,8 +140,8 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
 			return
 		}
 
-		// If it is not an allowed origin, redirect back to postwoman.io.
-		response.Header().Add("Location", "https://postwoman.io/")
+		// If it is not an allowed origin, redirect back to hoppscotch.io.
+		response.Header().Add("Location", "https://hoppscotch.io/")
 		response.WriteHeader(301)
 		return
 	} else {
