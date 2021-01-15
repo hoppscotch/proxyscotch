@@ -13,7 +13,7 @@ require (
 	github.com/gen2brain/dlgs v0.0.0-20191023125645-8832682fb7f8
 	github.com/getlantern/systray v0.0.0-20191206015929-6658a36a3306
 	github.com/go-toast/toast v0.0.0-20190211030409-01e6764cf0a4 // indirect
-	github.com/google/uuid v1.1.4
+	github.com/google/uuid v1.1.5
 	github.com/gopherjs/gopherjs v0.0.0-20191106031601-ce3c9ade29de // indirect
 	github.com/juju/errors v0.0.0-20190930114154-d42613fe1ab9 // indirect
 	github.com/juju/loggo v0.0.0-20190526231331-6e530bcce5d8 // indirect
