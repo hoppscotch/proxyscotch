@@ -5,10 +5,10 @@ import (
 	"github.com/getlantern/systray"
 	"github.com/pkg/browser"
 
-	icon "postwoman.io/proxy/icons"
-	"postwoman.io/proxy/inputbox"
-	"postwoman.io/proxy/libproxy"
-	"postwoman.io/proxy/notifier"
+	icon "github.com/hoppscotch/proxyscotch/icons"
+	"github.com/hoppscotch/proxyscotch/inputbox"
+	"github.com/hoppscotch/proxyscotch/libproxy"
+	"github.com/hoppscotch/proxyscotch/notifier"
 )
 
 var (
