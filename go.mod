@@ -1,4 +1,4 @@
-module postwoman.io/proxy
+module github.com/hoppscotch/proxyscotch
 
 go 1.12
 

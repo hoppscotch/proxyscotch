@@ -4,7 +4,7 @@ import (
 	"flag"
 	"log"
 
-	"postwoman.io/proxy/libproxy"
+	"github.com/hoppscotch/proxyscotch/libproxy"
 )
 
 func main() {
