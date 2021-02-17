@@ -185,7 +185,7 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
 		proxyRequest.Header.Set(k, v)
 	}
 
-	proxyRequest.Header.Set("User-Agent", "Proxywoman/1.0")
+	proxyRequest.Header.Set("User-Agent", "Proxyscotch/1.0")
 
 	if len(requestData.Data) > 0 {
 		proxyRequest.Body = ioutil.NopCloser(strings.NewReader(requestData.Data))
