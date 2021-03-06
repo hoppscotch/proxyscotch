@@ -1,31 +1,26 @@
-name: Build Proxywoman
+name: Build Proxyscotch
 
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
 
 jobs:
-
   build-linux:
     name: Linux Build
     runs-on: ubuntu-latest
     steps:
       - name: Install Dependencies
         run: sudo apt install gcc libgtk-3-dev libappindicator3-dev libwebkit2gtk-4.0-dev
-      -
-        name: Checkout
+      - name: Checkout
         uses: actions/checkout@v2
-      -
-        name: Unshallow
+      - name: Unshallow
         run: git fetch --prune --unshallow
-      -
-        name: Set up Go
+      - name: Set up Go
         uses: actions/setup-go@v2
         with:
           go-version: 1.14
-      -
-        name: Run Builds
+      - name: Run Builds
         run: |
           rm -rf ./out
           ./build.sh linux server
@@ -41,19 +36,15 @@ jobs:
     name: Darwin Build
     runs-on: macos-latest
     steps:
-      -
-        name: Checkout
+      - name: Checkout
         uses: actions/checkout@v2
-      -
-        name: Unshallow
+      - name: Unshallow
         run: git fetch --prune --unshallow
-      -
-        name: Set up Go
+      - name: Set up Go
         uses: actions/setup-go@v2
         with:
           go-version: 1.14
-      -
-        name: Run Builds
+      - name: Run Builds
         run: |
           rm -rf ./out
           ./build.sh darwin server
@@ -69,19 +60,15 @@ jobs:
     name: Windows Build
     runs-on: ubuntu-latest
     steps:
-      -
-        name: Checkout
+      - name: Checkout
         uses: actions/checkout@v2
-      -
-        name: Unshallow
+      - name: Unshallow
         run: git fetch --prune --unshallow
-      -
-        name: Set up Go
+      - name: Set up Go
         uses: actions/setup-go@v2
         with:
           go-version: 1.14
-      -
-        name: Run Builds
+      - name: Run Builds
         run: |
           rm -rf ./out
           ./build.sh windows server
@@ -98,34 +85,27 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build-linux, build-darwin, build-windows]
     steps:
-      -
-        name: Checkout
+      - name: Checkout
         uses: actions/checkout@v2
-      -
-        name: Unshallow
+      - name: Unshallow
         run: git fetch --prune --unshallow
-      -
-        name: Prepare Release Directory
+      - name: Prepare Release Directory
         run: mkdir ./release
-      -
-        name: Download a Build Artifact
+      - name: Download a Build Artifact
         uses: actions/download-artifact@v2
         with:
           # Destination path
           path: ./release # optional
-      -
-        name: Load version information
+      - name: Load version information
         run: |
           source ./version.properties
           echo "::set-env name=VERSION_NAME::$VERSION_NAME"
           echo "::set-env name=VERSION_CODE::$VERSION_CODE"
-      -
-        name: Display structure of downloaded files
+      - name: Display structure of downloaded files
         working-directory: ./release
         run: |
           ls -R
-      -
-        name: Create a Release
+      - name: Create a Release
         id: create_release
         uses: actions/create-release@v1
         env:
@@ -139,8 +119,7 @@ jobs:
           body: ""
           draft: false
           prerelease: false
-      -
-        name: Upload Windows Release Assets
+      - name: Upload Windows Release Assets
         id: upload_release_assets_windows
         uses: NBTX/upload-release-assets@v1
         env:
@@ -148,8 +127,7 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           targets: "./release/artifact/windows-*/*.exe"
-      -
-        name: Upload Linux Release Assets
+      - name: Upload Linux Release Assets
         id: upload_release_assets_linux
         uses: NBTX/upload-release-assets@v1
         env:
@@ -157,8 +135,7 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           targets: "./release/artifact/linux-*/*.!(md)"
-      -
-        name: Upload macOS Server Release Assets
+      - name: Upload macOS Server Release Assets
         id: upload_release_assets_darwin_server
         uses: NBTX/upload-release-assets@v1
         env:
@@ -166,8 +143,7 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           targets: "./release/artifact/darwin-server/*.!(md)"
-      -
-        name: Upload macOS Desktop Release Assets
+      - name: Upload macOS Desktop Release Assets
         id: upload_release_assets_darwin
         uses: NBTX/upload-release-assets@v1
         env:

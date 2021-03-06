@@ -27,7 +27,7 @@ func main() {
 
 func onReady() {
 	systray.SetIcon(icon.Data)
-	systray.SetTooltip("Proxywoman v" + VersionName + " (" + VersionCode + ") - created by NBTX")
+	systray.SetTooltip("Proxyscotch v" + VersionName + " (" + VersionCode + ") - created by NBTX")
 
 	/** Set up menu items. **/
 
@@ -39,8 +39,8 @@ func onReady() {
 
 	systray.AddSeparator()
 
-	// Open Postwoman Interface
-	mOpenPostwoman := systray.AddMenuItem("Open Postwoman", "")
+	// Open Hoppscotch Interface
+	mOpenHoppscotch := systray.AddMenuItem("Open Hoppscotch", "")
 
 	systray.AddSeparator()
 
@@ -54,39 +54,39 @@ func onReady() {
 	systray.AddSeparator()
 
 	// Quit Proxy
-	mQuit := systray.AddMenuItem("Quit Proxywoman", "")
+	mQuit := systray.AddMenuItem("Quit Proxyscotch", "")
 
 	/** Start proxy server. **/
-	go runPostwomanProxy()
+	go runHoppscotchProxy()
 
 	/** Wait for menu input. **/
 	for {
 		select {
-		case <-mOpenPostwoman.ClickedCh:
-			_ = browser.OpenURL("https://postwoman.io/")
+		case <-mOpenHoppscotch.ClickedCh:
+			_ = browser.OpenURL("https://hoppscotch.io/")
 
 		case <-mCopyAccessToken.ClickedCh:
 			_ = clipboard.WriteAll(libproxy.GetAccessToken())
-			_ = notifier.Notify("Proxywoman", "Proxy Access Token copied...", "The Proxy Access Token has been copied to your clipboard.", notifier.GetIcon())
+			_ = notifier.Notify("Proxyscotch", "Proxy Access Token copied...", "The Proxy Access Token has been copied to your clipboard.", notifier.GetIcon())
 
 		case <-mViewHelp.ClickedCh:
-			_ = browser.OpenURL("https://github.com/postwoman-io/proxywoman/wiki")
+			_ = browser.OpenURL("https://github.com/hoppscotch/proxyscotch/wiki")
 
 		case <-mSetAccessToken.ClickedCh:
-			newAccessToken, success := inputbox.InputBox("Proxywoman", "Please enter the new Proxy Access Token...\n(Leave this blank to disable access checks.)", "")
+			newAccessToken, success := inputbox.InputBox("Proxyscotch", "Please enter the new Proxy Access Token...\n(Leave this blank to disable access checks.)", "")
 			if success {
 				libproxy.SetAccessToken(newAccessToken)
 
 				if len(newAccessToken) == 0 {
-					_ = notifier.Notify("Proxywoman", "Proxy Access check disabled.", "**Anyone can access your proxy server!** The Proxy Access Token check has been disabled.", notifier.GetIcon())
+					_ = notifier.Notify("Proxyscotch", "Proxy Access check disabled.", "**Anyone can access your proxy server!** The Proxy Access Token check has been disabled.", notifier.GetIcon())
 				} else {
-					_ = notifier.Notify("Proxywoman", "Proxy Access Token updated...", "The Proxy Access Token has been updated.", notifier.GetIcon())
+					_ = notifier.Notify("Proxyscotch", "Proxy Access Token updated...", "The Proxy Access Token has been updated.", notifier.GetIcon())
 				}
 			}
 
 		case <-mUpdateCheck.ClickedCh:
 			// TODO: Add update check.
-			_ = browser.OpenURL("https://github.com/NBTX/postwoman-proxy")
+			_ = browser.OpenURL("https://github.com/hoppscotch/proxyscotch")
 
 		case <-mQuit.ClickedCh:
 			systray.Quit()
@@ -98,8 +98,8 @@ func onReady() {
 func onExit() {
 }
 
-func runPostwomanProxy() {
-	libproxy.Initialize("postwoman", "127.0.0.1:9159", "https://postwoman.io", "", onProxyStateChange, true, nil)
+func runHoppscotchProxy() {
+	libproxy.Initialize("hoppscotch", "127.0.0.1:9159", "https://hoppscotch.io", "", onProxyStateChange, true, nil)
 }
 
 func onProxyStateChange(status string, isListening bool) {

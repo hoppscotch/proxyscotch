@@ -5,7 +5,7 @@ func Notify(appName, title, message, icon string) error {
 	notification.Title = appName
 	notification.Subtitle = title
 	notification.AppIcon = icon
-	notification.Sender = "io.postwoman.proxy"
+	notification.Sender = "io.hoppscotch.proxy"
 	_ = notification.Push()
 	return nil
 }

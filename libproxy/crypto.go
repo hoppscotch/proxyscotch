@@ -42,7 +42,7 @@ func CreateKeyPair() *[2]bytes.Buffer {
 	template := x509.Certificate{
 		SerialNumber: big.NewInt(1),
 		Subject: pkix.Name{
-			Organization: []string{"The Postwoman Project"},
+			Organization: []string{"The Hoppscotch Project"},
 		},
 		NotBefore: time.Now(),
 		// Make certificate expire after 10 years.
@@ -97,17 +97,17 @@ func EnsurePrivateKeyInstalled() error {
 		if err == nil {
 			if runtime.GOOS == "darwin" {
 				_ = exec.Command("open", GetOrCreateDataPath()).Run()
-				_, err = dlgs.Warning("Proxywoman", "Proxywoman needs you to install a root certificate authority (cert.pem).\nPlease double-click the certificate file to open it in Keychain Access and follow the installation and trust process.\n\nFor more information about this process and why it's required, please click the Postwoman icon in the status tray and select 'Help'.\n\nClick OK when you have installed the certificate and marked it as trusted.")
+				_, err = dlgs.Warning("Proxyscotch", "Proxyscotch needs you to install a root certificate authority (cert.pem).\nPlease double-click the certificate file to open it in Keychain Access and follow the installation and trust process.\n\nFor more information about this process and why it's required, please click the Hoppscotch icon in the status tray and select 'Help'.\n\nClick OK when you have installed the certificate and marked it as trusted.")
 			}
 
 			if runtime.GOOS == "windows" {
 				_ = exec.Command("explorer.exe", GetOrCreateDataPath()+string(os.PathSeparator)+"cert.cer").Run()
-				_, err = dlgs.Warning("Proxywoman", "Proxywoman needs you to install a root certificate authority (cert.cer).\nPlease install the certificate (opened) into the 'Trusted Root Certification Authorities' store for the Local Machine.\n\nFor more information about this process and why it's required, please click the Postwoman icon in the system tray and select 'Help'.\n\nClick OK when you have installed the certificate and marked it as trusted.")
+				_, err = dlgs.Warning("Proxyscotch", "Proxyscotch needs you to install a root certificate authority (cert.cer).\nPlease install the certificate (opened) into the 'Trusted Root Certification Authorities' store for the Local Machine.\n\nFor more information about this process and why it's required, please click the Hoppscotch icon in the system tray and select 'Help'.\n\nClick OK when you have installed the certificate and marked it as trusted.")
 			}
 
 			if runtime.GOOS == "linux" {
 				_ = exec.Command("xdg-open", GetOrCreateDataPath()).Run()
-				_, err = dlgs.Warning("Proxywoman", "Proxywoman needs you to install a root certificate authority (cert.pem).\n[INSTRUCTIONS PENDING]\n\nFor more information about this process and why it's required, please click the Postwoman icon in the status tray and select 'Help'.\n\nClick OK when you have installed the certificate and marked it as trusted.")
+				_, err = dlgs.Warning("Proxyscotch", "Proxyscotch needs you to install a root certificate authority (cert.pem).\n[INSTRUCTIONS PENDING]\n\nFor more information about this process and why it's required, please click the Hoppscotch icon in the status tray and select 'Help'.\n\nClick OK when you have installed the certificate and marked it as trusted.")
 			}
 		}
 
