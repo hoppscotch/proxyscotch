@@ -124,9 +124,8 @@ func SetAccessToken(newAccessToken string) {
 	accessToken = newAccessToken
 }
 
-const InvalidRequest = "{\"success\": false, \"data\":{\"message\":\"(Proxy Error) Invalid request.\"}}"
-const proxyRequestFailed = "{\"success\": false, \"data\":{\"message\":\"(Proxy Error) Request failed.\"}}"
-const multipartKey = "multipart-part-key"
+const ErrorBodyInvalidRequest = "{\"success\": false, \"data\":{\"message\":\"(Proxy Error) Invalid request.\"}}"
+const ErrorBodyProxyRequestFailed = "{\"success\": false, \"data\":{\"message\":\"(Proxy Error) Request failed.\"}}"
 const maxMemory = int64(32 << 20) // multipartRequestDataKey currently its 32 MB
 
 func proxyHandler(response http.ResponseWriter, request *http.Request) {
@@ -144,7 +143,7 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
 			response.Header().Add("Access-Control-Allow-Headers", "*")
 			response.Header().Add("Access-Control-Allow-Origin", "*")
 			response.WriteHeader(200)
-			_, _ = fmt.Fprintln(response, proxyRequestFailed)
+			_, _ = fmt.Fprintln(response, ErrorBodyProxyRequestFailed)
 			return
 		}
 
@@ -167,24 +166,24 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
 	// Attempt to parse request body.
 	var requestData Request
 	isMultipart := strings.HasPrefix(request.Header.Get("content-type"), "multipart/form-data")
-	var multipartRequetDataKey = request.Header.Get(multipartKey)
-	if multipartRequetDataKey == "" {
-		multipartRequetDataKey = "proxyRequestData"
+	var multipartRequestDataKey = request.Header.Get("multipart-part-key")
+	if multipartRequestDataKey == "" {
+		multipartRequestDataKey = "proxyRequestData"
 	}
 	if isMultipart {
 		var err = request.ParseMultipartForm(maxMemory)
 		if err != nil {
 			log.Printf("Failed to parse request body: %v", err)
-			_, _ = fmt.Fprintln(response, InvalidRequest)
+			_, _ = fmt.Fprintln(response, ErrorBodyInvalidRequest)
 			return
 		}
-		r := request.MultipartForm.Value[multipartRequetDataKey]
+		r := request.MultipartForm.Value[multipartRequestDataKey]
 		err = json.Unmarshal([]byte(r[0]), &requestData)
 		if err != nil || len(requestData.Url) == 0 || len(requestData.Method) == 0 {
 			// If the logged err is nil here, it means either the URL or method were not supplied
 			// in the request data.
 			log.Printf("Failed to parse request body: %v", err)
-			_, _ = fmt.Fprintln(response, InvalidRequest)
+			_, _ = fmt.Fprintln(response, ErrorBodyInvalidRequest)
 			return
 		}
 	} else {
@@ -193,7 +192,7 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
 			// If the logged err is nil here, it means either the URL or method were not supplied
 			// in the request data.
 			log.Printf("Failed to parse request body: %v", err)
-			_, _ = fmt.Fprintln(response, InvalidRequest)
+			_, _ = fmt.Fprintln(response, ErrorBodyInvalidRequest)
 			return
 		}
 	}
@@ -224,13 +223,13 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
 		proxyRequest.Header.Set(k, v)
 	}
 
-	proxyRequest.Header.Set("User-Agent", "Proxyscotch/1.0")
+	proxyRequest.Header.Set("User-Agent", "Proxyscotch/1.1")
 
 	if isMultipart {
 		body := &bytes.Buffer{}
 		writer := multipart.NewWriter(body)
 		for key := range request.MultipartForm.Value {
-			if key == multipartRequetDataKey {
+			if key == multipartRequestDataKey {
 				continue
 			}
 			for _, val := range request.MultipartForm.Value[key] {
@@ -266,7 +265,7 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
 		err := writer.Close()
 		if err != nil {
 			log.Printf("Failed to write multipart content: %v", err)
-			_, _ = fmt.Fprintf(response, proxyRequestFailed)
+			_, _ = fmt.Fprintf(response, ErrorBodyProxyRequestFailed)
 			if err != nil {
 				return
 			}
@@ -287,7 +286,7 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
 
 	if err != nil {
 		log.Print("Failed to write response body: ", err.Error())
-		_, _ = fmt.Fprintln(response, proxyRequestFailed)
+		_, _ = fmt.Fprintln(response, ErrorBodyProxyRequestFailed)
 		return
 	}
 
@@ -321,7 +320,7 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
 	// Return the response.
 	if err != nil {
 		log.Print("Failed to write response body: ", err.Error())
-		_, _ = fmt.Fprintln(response, proxyRequestFailed)
+		_, _ = fmt.Fprintln(response, ErrorBodyProxyRequestFailed)
 		return
 	}
 }
