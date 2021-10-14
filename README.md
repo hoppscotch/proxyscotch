@@ -9,7 +9,7 @@
 
 ---
 
-A simple proxy server created by [@NBTX](https://github.com/NBTX/) for [Hoppscotch](https://github.com/hoppscotch/hoppscotch/) and hosted by [Apollo Software](https://apollosoftware.xyz/).
+A simple proxy server created by [@SamJakob](https://github.com/SamJakob/) for [Hoppscotch](https://github.com/hoppscotch/hoppscotch/) and formerly hosted by [Apollo Software Limited](https://apollosoftware.xyz/).
 
 ## Installation 📦
 **Proxyscotch requires `zenity` on Linux. This is available in most distribution package managers.**
