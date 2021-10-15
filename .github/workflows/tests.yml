@@ -1,0 +1,57 @@
+name: Proxyscotch Build
+
+
+on:
+  push:
+    branches: [ main , master ]
+  pull_request:
+    branches: [ main , master ]
+
+
+jobs:
+  test-linux:
+    name: Test Linux Build
+    runs-on: ubuntu-latest
+    steps:
+      #      - name: Install Dependencies
+      #        run: sudo apt install gcc libgtk-3-dev libappindicator3-dev libwebkit2gtk-4.0-dev
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.14
+      - name: Test ProxyScotch
+        run: |
+          go get -d -v
+          go test ./libproxy
+  build-darwin:
+    name: Test Darwin Build
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.14
+      - name: Test ProxyScotch
+        run: |
+          go get -d -v
+          go test ./libproxy
+  build-windows:
+    name: Test Windows Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Unshallow
+        run: git fetch --prune --unshallow
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.14
+      - name: Test ProxyScotch
+        run: |
+          go get -d -v
+          go test ./libproxy
