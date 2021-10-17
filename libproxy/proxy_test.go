@@ -20,7 +20,7 @@ type RespResult struct {
 }
 
 func getResultDef(request Request) RespResult {
-	return getResult(request, "hoppscotch.com")
+	return getResult(request, "validorigin1.com")
 }
 
 var (
@@ -45,13 +45,13 @@ func getResult(_req Request, origin string) RespResult {
 }
 
 func init() {
-	allowedOrigins = []string{"hoppscotch.com", "newbrandnewhttpclient.com"}
+	allowedOrigins = []string{"validorigin1.com", "validorigin2.com"}
 	app := httpbin.New()
 	testServer := httptest.NewServer(app.Handler())
 	testServerUrl = testServer.URL
 }
 
-func UnmarshalHTTPBinResponse(data string, t *testing.T) HTTPBinResponse {
+func checkErrorNUnmarshalHTTPBinResponse(data string, t *testing.T) HTTPBinResponse {
 	var r HTTPBinResponse
 	err := json.Unmarshal([]byte(data), &r)
 	assert.Nil(t, err)
@@ -74,7 +74,7 @@ func TestNotAllowedOrigin(t *testing.T) {
 	result := getResult(Request{
 		Url:    testServerUrl + "/get",
 		Method: "GET",
-	}, "unknownsite.com")
+	}, "invalidorigin.com")
 	// redirect in case of unknown origin
 	assert.Equal(t, 301, result.proxyResponse.Code)
 }
@@ -82,13 +82,17 @@ func TestNotAllowedOrigin(t *testing.T) {
 func TestWildCardOrigin(t *testing.T) {
 	_allowedOrigins := allowedOrigins
 	allowedOrigins = []string{"*"}
+	defer func() {
+		// reset allowedOrigins
+		// for rest of test cases are not thread safe, will have to run one after others
+		allowedOrigins = _allowedOrigins
+	}()
 	result := getResult(Request{
 		Method: "GET",
 		Url:    testServerUrl + "/get",
-	}, "unknownsite.com")
+	}, "invalidorigin.com")
 	// valid origin => 200 status
 	assert.Equal(t, 200, result.proxyResponse.Code)
-	allowedOrigins = _allowedOrigins
 }
 
 func TestUrlParamsInUrl(t *testing.T) {
@@ -97,7 +101,7 @@ func TestUrlParamsInUrl(t *testing.T) {
 		Url:    testServerUrl + "/get?ram=ranga",
 	})
 	assert.Equal(t, 200, resp.proxyResponse.Code)
-	httpBinResponse := UnmarshalHTTPBinResponse(resp.requestResponse.Data, t)
+	httpBinResponse := checkErrorNUnmarshalHTTPBinResponse(resp.requestResponse.Data, t)
 	// url params are sent
 	assert.Equal(t, "ranga", httpBinResponse.Args.Get("ram"))
 }
@@ -111,7 +115,7 @@ func TestUrlParamsInParams(t *testing.T) {
 		},
 	})
 	assert.Equal(t, 200, resp.proxyResponse.Code)
-	httpBinResponse := UnmarshalHTTPBinResponse(resp.requestResponse.Data, t)
+	httpBinResponse := checkErrorNUnmarshalHTTPBinResponse(resp.requestResponse.Data, t)
 	// url params are sent
 	assert.Equal(t, "ranga", httpBinResponse.Args.Get("ram"))
 }
@@ -125,7 +129,7 @@ func TestHeaders(t *testing.T) {
 		},
 	})
 	assert.Equal(t, 200, resp.proxyResponse.Code)
-	httpBinResponse := UnmarshalHTTPBinResponse(resp.requestResponse.Data, t)
+	httpBinResponse := checkErrorNUnmarshalHTTPBinResponse(resp.requestResponse.Data, t)
 	// headers are sent
 	assert.Equal(t, "testheadervalue", httpBinResponse.Headers.Get("testheaderkey"))
 }
@@ -134,10 +138,10 @@ func TestAccessControlHeaders(t *testing.T) {
 	resp := getResult(Request{
 		Method: "GET",
 		Url:    testServerUrl + "/get",
-	}, "newbrandnewhttpclient.com")
+	}, "validorigin2.com")
 	assert.Equal(t, 200, resp.proxyResponse.Code)
 	// These headers are required for browser client to read response and headers
-	assert.Equal(t, "newbrandnewhttpclient.com", resp.proxyResponse.Header().Get("Access-Control-Allow-Origin"))
+	assert.Equal(t, "validorigin2.com", resp.proxyResponse.Header().Get("Access-Control-Allow-Origin"))
 }
 
 func TestPreflightOptionsRequest(t *testing.T) {
@@ -158,7 +162,7 @@ func TestPostMethod(t *testing.T) {
 	})
 	// post method
 	assert.Equal(t, 200, resp.proxyResponse.Code)
-	UnmarshalHTTPBinResponse(resp.requestResponse.Data, t)
+	checkErrorNUnmarshalHTTPBinResponse(resp.requestResponse.Data, t)
 }
 
 func TestPutMethod(t *testing.T) {
@@ -168,7 +172,7 @@ func TestPutMethod(t *testing.T) {
 	})
 	assert.Equal(t, 200, resp.proxyResponse.Code)
 	// putMethod
-	UnmarshalHTTPBinResponse(resp.requestResponse.Data, t)
+	checkErrorNUnmarshalHTTPBinResponse(resp.requestResponse.Data, t)
 }
 
 func TestWantsBinary(t *testing.T) {
@@ -180,7 +184,7 @@ func TestWantsBinary(t *testing.T) {
 	// WantsBinary: true => response will be base64encoded
 	decodeString, err := base64.RawStdEncoding.DecodeString(resp.requestResponse.Data)
 	assert.Nil(t, err)
-	UnmarshalHTTPBinResponse(string(decodeString), t)
+	checkErrorNUnmarshalHTTPBinResponse(string(decodeString), t)
 }
 
 func TestPostDataJson(t *testing.T) {
@@ -204,7 +208,7 @@ func TestPostDataJson(t *testing.T) {
 				}`,
 	}
 	resp := getResultDef(request)
-	response := UnmarshalHTTPBinResponse(resp.requestResponse.Data, t)
+	response := checkErrorNUnmarshalHTTPBinResponse(resp.requestResponse.Data, t)
 	assert.Equal(t, request.Data, response.Data)
 }
 
@@ -218,13 +222,14 @@ func TestPostDataUrlencoded(t *testing.T) {
 		Data: `ram=ranga`,
 	}
 	resp := getResultDef(request)
-	response := UnmarshalHTTPBinResponse(resp.requestResponse.Data, t)
+	response := checkErrorNUnmarshalHTTPBinResponse(resp.requestResponse.Data, t)
 	assert.Equal(t, request.Data, response.Data)
 	assert.Equal(t, "[ranga]", fmt.Sprintf("%v", response.Form["ram"]))
 }
 
 func TestPostMultipart(t *testing.T) {
-	request := httptest.NewRequest("POST", "/", bytes.NewReader([]byte(fmt.Sprintf(`--61ed834ef57e878fad0a3d27d2b04fb1
+	request := httptest.NewRequest("POST", "/",
+		bytes.NewReader([]byte(fmt.Sprintf(`--61ed834ef57e878fad0a3d27d2b04fb1
 Content-Disposition: form-data; name="proxyRequestData"
 
 {
@@ -246,7 +251,7 @@ ranga
 --61ed834ef57e878fad0a3d27d2b04fb1--
 `, testServerUrl))))
 	request.Header.Set("content-type", "multipart/form-data; boundary=61ed834ef57e878fad0a3d27d2b04fb1")
-	request.Header.Set("origin", "hoppscotch.com")
+	request.Header.Set("origin", "validorigin1.com")
 	resp := *httptest.NewRecorder()
 	proxyHandler(&resp, request)
 	var result Response
@@ -259,6 +264,9 @@ ranga
 
 func TestAccessTokenDisallowIncasNotAvailable(t *testing.T) {
 	accessToken = "some-access-token"
+	defer func() {
+		accessToken = "" // delete access token(cleanup)
+	}()
 	request := Request{
 		Method: "POST",
 		Url:    testServerUrl + "/",
@@ -272,22 +280,27 @@ func TestAccessTokenDisallowIncasNotAvailable(t *testing.T) {
 	assert.Nil(t, err)
 	success := proxyRespParse["success"]
 	assert.Equal(t, "false", fmt.Sprintf("%v", success))
-	accessToken = "" // delete access token(cleanup)
 }
 
-func TestCorrectAccessTokenPass(t *testing.T) {
+func TestAllowWithValidAccessToken(t *testing.T) {
 	accessToken = "some-access-token"
+	defer func() {
+		accessToken = "" // delete access token(cleanup)
+	}()
 	request := Request{
 		Method:      "POST",
 		Url:         testServerUrl + "/post",
 		AccessToken: accessToken,
 	}
 	proxyResult := getResultDef(request)
-	UnmarshalHTTPBinResponse(proxyResult.requestResponse.Data, t)
+	checkErrorNUnmarshalHTTPBinResponse(proxyResult.requestResponse.Data, t)
 }
 
-func TestIncorrectAccessFail(t *testing.T) {
+func TestInvalidAccessTokenRequestShouldFail(t *testing.T) {
 	accessToken = "some-access-token"
+	defer func() {
+		accessToken = ""
+	}()
 	request := Request{
 		Method:      "POST",
 		Url:         testServerUrl + "/",
@@ -299,7 +312,6 @@ func TestIncorrectAccessFail(t *testing.T) {
 	json.NewDecoder(proxyResult.proxyResponse.Body).Decode(&proxyRespParse)
 	success := proxyRespParse["success"]
 	assert.Equal(t, "false", fmt.Sprintf("%v", success))
-	accessToken = ""
 }
 
 //func TestBannedOutputs(t *testing.T) {
@@ -307,7 +319,7 @@ func TestIncorrectAccessFail(t *testing.T) {
 //	// need clear understanding on banned outputs
 //}
 
-func TestAuthentication(t *testing.T) {
+func TestBasicAuth(t *testing.T) {
 	request := Request{
 		Method: "GET",
 		Url:    testServerUrl + "/basic-auth/username/password",
@@ -321,24 +333,20 @@ func TestAuthentication(t *testing.T) {
 	}
 	resp := getResultDef(request)
 	assert.Equal(t, 200, resp.requestResponse.Status)
-	UnmarshalHTTPBinResponse(resp.requestResponse.Data, t)
+	checkErrorNUnmarshalHTTPBinResponse(resp.requestResponse.Data, t)
 
 }
 
-func TestBadAuthentication(t *testing.T) {
+func TestBasicAuthIncorrectParams(t *testing.T) {
 	// just to confirm above auth is working fine if username and password is sent wrong
+
 	request := Request{
 		Method: "GET",
 		Url:    testServerUrl + "/basic-auth/username/password2",
-		Auth: struct {
-			Username string
-			Password string
-		}{
-			Username: "username",
-			Password: "password",
-		},
 	}
+	request.Auth.Username = "username"
+	request.Auth.Password = "password"
 	resp := getResultDef(request)
 	assert.Equal(t, 401, resp.requestResponse.Status)
-	UnmarshalHTTPBinResponse(resp.requestResponse.Data, t)
+	checkErrorNUnmarshalHTTPBinResponse(resp.requestResponse.Data, t)
 }
