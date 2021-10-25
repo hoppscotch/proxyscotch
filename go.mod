@@ -11,6 +11,7 @@ require (
 	github.com/gopherjs/gopherjs v0.0.0-20191106031601-ce3c9ade29de // indirect
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/martinlindhe/inputbox v0.0.0-20170822001701-56d473fa6ae3
+	github.com/mccutchen/go-httpbin/v2 v2.2.2 // indirect
 	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d // indirect
 	github.com/pkg/browser v0.0.0-20180916011732-0a3d74bf9ce4
 	github.com/stretchr/testify v1.4.0 // indirect

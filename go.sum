@@ -36,6 +36,8 @@ github.com/lxn/win v0.0.0-20191106123917-121afc750dd3 h1:DvGEvKK/Qnhph/EgdBN9zXA
 github.com/lxn/win v0.0.0-20191106123917-121afc750dd3/go.mod h1:ouWl4wViUNh8tPSIwxTVMuS014WakR1hqvBc2I0bMoA=
 github.com/martinlindhe/inputbox v0.0.0-20170822001701-56d473fa6ae3 h1:teGYw72DnPQhz2p9tyWfPJBrgMud6TsW6SAGf/UNbrE=
 github.com/martinlindhe/inputbox v0.0.0-20170822001701-56d473fa6ae3/go.mod h1:NzLiokHFxkMAoDQlhgRFNCM7PmhTzJAjenmXrYSX/oU=
+github.com/mccutchen/go-httpbin/v2 v2.2.2 h1:mF2biY4qH2ZQSz7AG5MamQ8C1SF3uaYtWH+rERf+J4A=
+github.com/mccutchen/go-httpbin/v2 v2.2.2/go.mod h1:+DBHcmg6EOeoizuiOI8iL12VIHXx+9YQNlz+gjB9uxk=
 github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d h1:VhgPp6v9qf9Agr/56bj7Y/xa04UccTW04VP0Qed4vnQ=
 github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d/go.mod h1:YUTz3bUH2ZwIWBy3CJBeOBEugqcmXREj14T+iG/4k4U=
 github.com/oxtoacart/bpool v0.0.0-20190530202638-03653db5a59c h1:rp5dCmg/yLR3mgFuSOe4oEnDDmGLROTvMragMUXpTQw=
