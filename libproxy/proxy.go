@@ -24,6 +24,7 @@ var (
 	sessionFingerprint string
 	allowedOrigins     []string
 	bannedOutputs      []string
+	bannedDests        []string
 )
 
 type Request struct {
@@ -49,6 +50,16 @@ type Response struct {
 	Headers    map[string]string `json:"headers"`
 }
 
+func isAllowedDest(dest string) bool {
+	for _, b := range bannedDests {
+		if b == dest {
+			return false
+		}
+	}
+
+	return true
+}
+
 func isAllowedOrigin(origin string) bool {
 	if allowedOrigins[0] == "*" {
 		return true
@@ -68,12 +79,18 @@ func Initialize(
 	proxyURL string,
 	initialAllowedOrigins string,
 	initialBannedOutputs string,
+	initialBannedDests string,
 	onStatusChange statusChangeFunction,
 	withSSL bool,
 	finished chan bool,
 ) {
 	if initialBannedOutputs != "" {
 		bannedOutputs = strings.Split(initialBannedOutputs, ",")
+	}
+	if initialBannedDests != "" {
+		bannedDests = strings.Split(initialBannedDests, ",")
+	} else {
+		bannedDests = []string{}
 	}
 	allowedOrigins = strings.Split(initialAllowedOrigins, ",")
 	accessToken = initialAccessToken
@@ -208,6 +225,13 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
 	proxyRequest.Header = make(http.Header)
 	proxyRequest.Method = requestData.Method
 	proxyRequest.URL, _ = url.Parse(requestData.Url)
+
+	// Block requests to illegal destinations
+	if !isAllowedDest(proxyRequest.URL.Hostname()) {
+		log.Print("A request to a banned destination was made.")
+		_, _ = fmt.Fprintln(response, "{\"success\": false, \"data\":{\"message\":\"(Proxy Error) Request cannot be to this destination.\"}}")
+		return
+	}
 
 	var params = proxyRequest.URL.Query()
 

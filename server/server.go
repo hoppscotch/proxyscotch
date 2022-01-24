@@ -12,10 +12,12 @@ func main() {
 	tokenPtr := flag.String("token", "", "the Proxy Access Token used to restrict access to the server.")
 	allowedOriginsPtr := flag.String("allowed-origins", "*", "a comma separated list of allowed origins.")
 	bannedOutputsPtr := flag.String("banned-outputs", "", "a comma separated list of banned outputs.")
+	bannedDestsPtr := flag.String("banned-dests", "", "a comma separated list of banned proxy destinations.")
+
 	flag.Parse()
 
 	finished := make(chan bool)
-	libproxy.Initialize(*tokenPtr, *hostPtr, *allowedOriginsPtr, *bannedOutputsPtr, onProxyStateChangeServer, false, finished)
+	libproxy.Initialize(*tokenPtr, *hostPtr, *allowedOriginsPtr, *bannedOutputsPtr, *bannedDestsPtr, onProxyStateChangeServer, false, finished)
 
 	<-finished
 }
