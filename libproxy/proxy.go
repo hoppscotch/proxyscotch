@@ -298,9 +298,11 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
 		contentType := fmt.Sprintf("multipart/form-data; boundary=%v", writer.Boundary())
 		proxyRequest.Header.Set("content-type", contentType)
 		proxyRequest.Body = ioutil.NopCloser(bytes.NewReader(body.Bytes()))
+		proxyRequest.ContentLength = int64(len(body.Bytes()))
 		proxyRequest.Body.Close()
 	} else if len(requestData.Data) > 0 {
 		proxyRequest.Body = ioutil.NopCloser(strings.NewReader(requestData.Data))
+		proxyRequest.ContentLength = int64(len(requestData.Data))
 		proxyRequest.Body.Close()
 	}
 
