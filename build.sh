@@ -58,6 +58,12 @@ if [ "$1" = "clean" ]; then
   echo "Cleaning build directory..."
   rm -rf ./out/*
 
+  echo "Cleaning left over build files..."
+  [ -f "icons/icon_unix.go" ] && rm icons/icon_unix.go
+  [ -f "icons/icon_win.go" ] && rm icons/icon_win.go
+
+  [ -f "rsrc.syso" ] && rm rsrc.syso
+
   fcomplete
   exit 0
 fi
@@ -287,11 +293,15 @@ if [ "$PLATFORM" = "darwin" ]; then
   cd "$WORKING_DIR" || exit 1
 elif [ "$PLATFORM" = "windows" ]; then
   [ -f "rsrc.syso" ] && rm rsrc.syso
-  go get github.com/akavel/rsrc
+  go install github.com/akavel/rsrc
 
-  rsrc -manifest="$OUTPUT_DIR/proxyscotch.manifest" -ico="icons/icon.ico" -o rsrc.syso
+  rsrc -arch="amd64" -manifest="$OUTPUT_DIR/proxyscotch.manifest" -ico="icons/icon.ico" -o rsrc.syso
   CGO_ENABLED=1 GOOS="windows" GOARCH="amd64" go build -ldflags "-X main.VersionName=$VERSION_NAME -X main.VersionCode=$VERSION_CODE -H=windowsgui" -o "$OUTPUT_DIR/proxyscotch-amd64.exe"
+  rm rsrc.syso
+
+  rsrc -arch="arm64" -manifest="$OUTPUT_DIR/proxyscotch.manifest" -ico="icons/icon.ico" -o rsrc.syso
   CGO_ENABLED=1 GOOS="windows" GOARCH="arm64" go build -ldflags "-X main.VersionName=$VERSION_NAME -X main.VersionCode=$VERSION_CODE -H=windowsgui" -o "$OUTPUT_DIR/proxyscotch-arm64.exe"
+  rm rsrc.syso
 
   mkdir "$OUTPUT_DIR/icons"
   cp icons/icon.png "$OUTPUT_DIR/icons/icon.png"
@@ -299,10 +309,9 @@ elif [ "$PLATFORM" = "windows" ]; then
   mkdir "$OUTPUT_DIR/data"
 
   rm "$OUTPUT_DIR/proxyscotch.manifest"
-  rm rsrc.syso
 
   mv "$OUTPUT_DIR/proxyscotch-amd64.exe" "$OUTPUT_DIR/Proxyscotch-Desktop-Windows-amd64-v${VERSION_NAME}.exe"
-  mv "$OUTPUT_DIR/proxyscotch-arm64.exe" "$OUTPUT_DIR/Proxyscotch-Desktop-Windows-arm64-v${VERSION_NAME}.exe"
+#  mv "$OUTPUT_DIR/proxyscotch-arm64.exe" "$OUTPUT_DIR/Proxyscotch-Desktop-Windows-arm64-v${VERSION_NAME}.exe"
 
   # Compressing output bundles
   echo "Compressing output bundles"
