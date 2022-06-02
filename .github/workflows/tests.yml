@@ -12,17 +12,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Install Dependencies
-        run: sudo apt install gcc libgtk-3-dev libappindicator3-dev libwebkit2gtk-4.0-dev
+        run: |
+          sudo apt update
+          sudo apt install gcc libgtk-3-dev libappindicator3-dev libwebkit2gtk-4.0-dev
       - name: Checkout
         uses: actions/checkout@v2
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
           go-version: 1.18
-      - name: Test Proxyscotch
-        run: |
-          go get -d -v
-          go test ./libproxy
       # Run a build but don't do anything with the artifacts.
       # i.e., don't sign them or anything.
       # This is just to check that a build would run correctly for release.
@@ -31,6 +29,10 @@ jobs:
           go get -d -v
           ./build.sh linux server
           ./build.sh linux desktop
+      - name: Test Proxyscotch
+        run: |
+          go get -d -v
+          go test ./libproxy
   build-darwin:
     name: Test Darwin Build
     runs-on: macos-latest
@@ -41,10 +43,6 @@ jobs:
         uses: actions/setup-go@v2
         with:
           go-version: 1.18
-      - name: Test Proxyscotch
-        run: |
-          go get -d -v
-          go test ./libproxy
       # Run a build but don't do anything with the artifacts.
       # i.e., don't sign them or anything.
       # This is just to check that a build would run correctly for release.
@@ -53,6 +51,10 @@ jobs:
           go get -d -v
           ./build.sh darwin server
           ./build.sh darwin desktop
+      - name: Test Proxyscotch
+        run: |
+          go get -d -v
+          go test ./libproxy
   build-windows:
     name: Test Windows Build
     runs-on: ubuntu-latest
@@ -65,10 +67,6 @@ jobs:
         uses: actions/setup-go@v2
         with:
           go-version: 1.18
-      - name: Test Proxyscotch
-        run: |
-          go get -d -v
-          go test ./libproxy
       # Run a build but don't do anything with the artifacts.
       # i.e., don't sign them or anything.
       # This is just to check that a build would run correctly for release.
@@ -77,3 +75,7 @@ jobs:
           go get -d -v
           ./build.sh windows server
           ./build.sh windows desktop
+      - name: Test Proxyscotch
+        run: |
+          go get -d -v
+          go test ./libproxy
