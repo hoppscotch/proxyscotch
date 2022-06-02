@@ -13,7 +13,7 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt update
-          sudo apt install gcc libgtk-3-dev libappindicator3-dev libwebkit2gtk-4.0-dev
+          sudo apt install gcc libgtk-3-dev libappindicator3-dev libwebkit2gtk-4.0-dev libayatana-appindicator3-dev
       - name: Checkout
         uses: actions/checkout@v2
       - name: Unshallow
