@@ -322,7 +322,7 @@ elif [ "$PLATFORM" = "windows" ]; then
   # cd "$WORKING_DIR" || exit 1
 elif [ "$PLATFORM" = "linux" ]; then
   CGO_ENABLED=1 GOOS="linux" GOARCH="amd64" go build -ldflags "-X main.VersionName=$VERSION_NAME -X main.VersionCode=$VERSION_CODE" -o "$OUTPUT_DIR/Proxyscotch-Desktop-Linux-amd64-v${VERSION_NAME}"
-  CGO_ENABLED=1 GOOS="linux" GOARCH="arm64" go build -ldflags "-X main.VersionName=$VERSION_NAME -X main.VersionCode=$VERSION_CODE" -o "$OUTPUT_DIR/Proxyscotch-Desktop-Linux-arm64-v${VERSION_NAME}"
+  CGO_ENABLED=1 GOOS="linux" GOARCH="arm64" CC=aarch64-linux-gnu-gcc go build -ldflags "-X main.VersionName=$VERSION_NAME -X main.VersionCode=$VERSION_CODE" -o "$OUTPUT_DIR/Proxyscotch-Desktop-Linux-arm64-v${VERSION_NAME}"
 
   # Compressing output bundles
   # echo "Compressing output bundles"
