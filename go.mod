@@ -1,22 +1,46 @@
 module github.com/hoppscotch/proxyscotch
 
-go 1.12
+go 1.18
 
 require (
 	github.com/atotto/clipboard v0.1.4
-	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/gen2brain/dlgs v0.0.0-20191023125645-8832682fb7f8
-	github.com/getlantern/systray v0.0.0-20191206015929-6658a36a3306
+	github.com/deckarep/gosx-notifier v0.0.0-20180201035817-e127226297fb
+	github.com/gen2brain/dlgs v0.0.0-20211108104213-bade24837f0b
+	github.com/getlantern/systray v1.2.1
 	github.com/google/uuid v1.3.0
-	github.com/gopherjs/gopherjs v0.0.0-20191106031601-ce3c9ade29de // indirect
-	github.com/kr/pretty v0.1.0 // indirect
-	github.com/martinlindhe/inputbox v0.0.0-20170822001701-56d473fa6ae3
-	github.com/mccutchen/go-httpbin/v2 v2.2.2 // indirect
-	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d // indirect
-	github.com/pkg/browser v0.0.0-20180916011732-0a3d74bf9ce4
-	github.com/stretchr/testify v1.4.0 // indirect
-	golang.org/x/sys v0.0.0-20191104094858-e8c54fb511f6 // indirect
-	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
+	github.com/martinlindhe/inputbox v0.0.0-20210326232244-b26136a79ad0
+	github.com/mccutchen/go-httpbin/v2 v2.4.0
+	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8
+	github.com/stretchr/testify v1.7.1
 	gopkg.in/toast.v1 v1.0.0-20180812000517-0a84660828b2
-	gopkg.in/yaml.v2 v2.2.5 // indirect
+)
+
+require (
+	github.com/akavel/rsrc v0.10.2 // indirect
+	github.com/bhendo/go-powershell v0.0.0-20190719160123-219e7fb4e41e // indirect
+	github.com/cratonica/2goarray v0.0.0-20190331194516-514510793eaa // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/getlantern/context v0.0.0-20220418194847-3d5e7a086201 // indirect
+	github.com/getlantern/errors v1.0.1 // indirect
+	github.com/getlantern/golog v0.0.0-20211223150227-d4d95a44d873 // indirect
+	github.com/getlantern/hex v0.0.0-20220104173244-ad7e4b9194dc // indirect
+	github.com/getlantern/hidden v0.0.0-20220104173330-f221c5a24770 // indirect
+	github.com/getlantern/ops v0.0.0-20220418195917-45286e0140f6 // indirect
+	github.com/go-logr/logr v1.2.3 // indirect
+	github.com/go-logr/stdr v1.2.2 // indirect
+	github.com/go-stack/stack v1.8.1 // indirect
+	github.com/gopherjs/gopherjs v1.17.2 // indirect
+	github.com/juju/errors v0.0.0-20220331221717-b38fca44723b // indirect
+	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d // indirect
+	github.com/oxtoacart/bpool v0.0.0-20190530202638-03653db5a59c // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
+	go.opentelemetry.io/otel v1.7.0 // indirect
+	go.opentelemetry.io/otel/trace v1.7.0 // indirect
+	go.uber.org/atomic v1.9.0 // indirect
+	go.uber.org/multierr v1.8.0 // indirect
+	go.uber.org/zap v1.21.0 // indirect
+	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97 // indirect
+	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a // indirect
+	golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

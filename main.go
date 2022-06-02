@@ -99,7 +99,7 @@ func onExit() {
 }
 
 func runHoppscotchProxy() {
-	libproxy.Initialize("hoppscotch", "127.0.0.1:9159", "https://hoppscotch.io", "", onProxyStateChange, true, nil)
+	libproxy.Initialize("hoppscotch", "127.0.0.1:9159", "https://hoppscotch.io", "", "", onProxyStateChange, true, nil)
 }
 
 func onProxyStateChange(status string, isListening bool) {
