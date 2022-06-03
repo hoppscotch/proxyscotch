@@ -101,8 +101,10 @@ jobs:
       - name: Load version information
         run: |
           source ./version.properties
-          echo "::set-env name=VERSION_NAME::$VERSION_NAME"
-          echo "::set-env name=VERSION_CODE::$VERSION_CODE"
+          echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV 
+          echo "VERSION_CODE=$VERSION_CODE" >> $GITHUB_ENV
+#          echo "::set-env name=VERSION_NAME::$VERSION_NAME"
+#          echo "::set-env name=VERSION_CODE::$VERSION_CODE"
       - name: Display structure of downloaded files
         working-directory: ./release
         run: |
