@@ -297,6 +297,7 @@ if [ "$PLATFORM" = "darwin" ]; then
   cd "$WORKING_DIR" || exit 1
 elif [ "$PLATFORM" = "windows" ]; then
   [ -f "rsrc.syso" ] && rm rsrc.syso
+  go get github.com/akavel/rsrc
   go install github.com/akavel/rsrc
 
   rsrc -arch="amd64" -manifest="$OUTPUT_DIR/proxyscotch.manifest" -ico="icons/icon.ico" -o rsrc.syso
