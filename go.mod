@@ -11,7 +11,7 @@ require (
 	github.com/martinlindhe/inputbox v0.0.0-20210326232244-b26136a79ad0
 	github.com/mccutchen/go-httpbin/v2 v2.4.0
 	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8
-	github.com/stretchr/testify v1.7.2
+	github.com/stretchr/testify v1.7.3
 	gopkg.in/toast.v1 v1.0.0-20180812000517-0a84660828b2
 )
 
