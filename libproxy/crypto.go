@@ -9,7 +9,6 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/pem"
-	"io/ioutil"
 	"log"
 	"math/big"
 	"net"
@@ -83,15 +82,15 @@ func EnsurePrivateKeyInstalled() error {
 	// and then return no error (unless one was thrown in the process of creating the key.)
 	if os.IsNotExist(err) {
 		encodedPEM := CreateKeyPair()
-		err = ioutil.WriteFile(GetOrCreateDataPath()+"/cert.pem", encodedPEM[0].Bytes(), 0600)
+		err = os.WriteFile(GetOrCreateDataPath()+"/cert.pem", encodedPEM[0].Bytes(), 0600)
 		if err != nil {
-			err = ioutil.WriteFile(GetOrCreateDataPath()+"/key.pem", encodedPEM[1].Bytes(), 0600)
+			err = os.WriteFile(GetOrCreateDataPath()+"/key.pem", encodedPEM[1].Bytes(), 0600)
 		}
 
 		if runtime.GOOS == "windows" {
 			// Windows doesn't recognize .pem as certificates, but we can simply write the PEM data
 			// into a .cer file and it works just fine!
-			err = ioutil.WriteFile(GetOrCreateDataPath()+"/cert.cer", encodedPEM[0].Bytes(), 0600)
+			err = os.WriteFile(GetOrCreateDataPath()+"/cert.cer", encodedPEM[0].Bytes(), 0600)
 		}
 
 		if err == nil {

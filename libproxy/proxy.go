@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"mime/multipart"
 	"net/http"
@@ -169,7 +168,7 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
 		response.WriteHeader(301)
 		return
 	} else {
-		// Otherwise set the appropriate CORS polciy and continue.
+		// Otherwise set the appropriate CORS policy and continue.
 		response.Header().Add("Access-Control-Allow-Origin", request.Header.Get("Origin"))
 	}
 
@@ -247,7 +246,15 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
 		proxyRequest.Header.Set(k, v)
 	}
 
-	proxyRequest.Header.Set("User-Agent", "Proxyscotch/1.1")
+	// Add proxy headers.
+	proxyRequest.Header.Set("X-Forwarded-For", request.RemoteAddr)
+	proxyRequest.Header.Set("Via", "Proxyscotch/1.1")
+
+	if len(strings.TrimSpace(proxyRequest.Header.Get("User-Agent"))) < 1 {
+		// If there is no valid user agent specified at all, *then* use the default.
+		// We'll do this for now, we could look at using the User-Agent from whatever made the request.
+		proxyRequest.Header.Set("User-Agent", "Proxyscotch/1.1")
+	}
 
 	if isMultipart {
 		body := &bytes.Buffer{}
@@ -297,13 +304,13 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
 		}
 		contentType := fmt.Sprintf("multipart/form-data; boundary=%v", writer.Boundary())
 		proxyRequest.Header.Set("content-type", contentType)
-		proxyRequest.Body = ioutil.NopCloser(bytes.NewReader(body.Bytes()))
+		proxyRequest.Body = io.NopCloser(bytes.NewReader(body.Bytes()))
 		proxyRequest.ContentLength = int64(len(body.Bytes()))
-		proxyRequest.Body.Close()
+		_ = proxyRequest.Body.Close()
 	} else if len(requestData.Data) > 0 {
-		proxyRequest.Body = ioutil.NopCloser(strings.NewReader(requestData.Data))
+		proxyRequest.Body = io.NopCloser(strings.NewReader(requestData.Data))
 		proxyRequest.ContentLength = int64(len(requestData.Data))
-		proxyRequest.Body.Close()
+		_ = proxyRequest.Body.Close()
 	}
 
 	var client http.Client
@@ -320,7 +327,7 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
 	responseData.Success = true
 	responseData.Status = proxyResponse.StatusCode
 	responseData.StatusText = strings.Join(strings.Split(proxyResponse.Status, " ")[1:], " ")
-	responseBytes, err := ioutil.ReadAll(proxyResponse.Body)
+	responseBytes, err := io.ReadAll(proxyResponse.Body)
 	responseData.Headers = headerToArray(proxyResponse.Header)
 
 	if requestData.WantsBinary {
@@ -351,8 +358,8 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
 	}
 }
 
-/// Converts http.Header to a map.
-/// Original Source: https://stackoverflow.com/a/37030039/2872279 (modified).
+// / Converts http.Header to a map.
+// / Original Source: https://stackoverflow.com/a/37030039/2872279 (modified).
 func headerToArray(header http.Header) (res map[string]string) {
 	res = make(map[string]string)
 
