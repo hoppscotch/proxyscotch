@@ -83,7 +83,10 @@ func EnsurePrivateKeyInstalled() error {
 	if os.IsNotExist(err) {
 		encodedPEM := CreateKeyPair()
 		err = os.WriteFile(GetOrCreateDataPath()+"/cert.pem", encodedPEM[0].Bytes(), 0600)
-		if err != nil {
+		
+		// There's no point writing the key if we failed to write the certificate, so only do that
+		// if there is no error.
+		if err == nil {
 			err = os.WriteFile(GetOrCreateDataPath()+"/key.pem", encodedPEM[1].Bytes(), 0600)
 		}
 
@@ -93,7 +96,9 @@ func EnsurePrivateKeyInstalled() error {
 			err = os.WriteFile(GetOrCreateDataPath()+"/cert.cer", encodedPEM[0].Bytes(), 0600)
 		}
 
-		if err == nil {
+		// Assuming that there was no error writing either the certificate, or the key, we can continue
+		// to prompt the user to install the certificate authority.
+		if err != nil {
 			if runtime.GOOS == "darwin" {
 				_ = exec.Command("open", GetOrCreateDataPath()).Run()
 				_, err = dlgs.Warning("Proxyscotch", "Proxyscotch needs you to install a root certificate authority (cert.pem).\nPlease double-click the certificate file to open it in Keychain Access and follow the installation and trust process.\n\nFor more information about this process and why it's required, please click the Hoppscotch icon in the status tray and select 'Help'.\n\nClick OK when you have installed the certificate and marked it as trusted.")
