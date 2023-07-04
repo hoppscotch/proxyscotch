@@ -46,6 +46,7 @@ func getResult(_req Request, origin string) RespResult {
 
 func init() {
 	allowedOrigins = []string{"validorigin1.com", "validorigin2.com"}
+
 	app := httpbin.New()
 	testServer := httptest.NewServer(app.Handler())
 	testServerUrl = testServer.URL
@@ -192,7 +193,7 @@ func TestPostDataJson(t *testing.T) {
 		Method: "POST",
 		Url:    testServerUrl + "/post",
 		Headers: map[string]string{
-			"content-type": "json",
+			"content-type": "application/json",
 		},
 		Data: `{
 				  "string": "simple",
