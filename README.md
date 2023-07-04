@@ -86,3 +86,15 @@ $ ./out/windows-server/server.exe --host="<hostname>:<port>" --token="<token_or_
 - `token`: blank; allowing anyone to access (see below)
 
 **NOTE:** When the token is blank it will allow *anybody* to access your proxy server. This may be what you want, but please be sure to consider the security implications.
+
+#### Server Command-Line Options
+
+The server binary supports various options to customize your instance. Each of these are in the format shown in the example above, e.g., `host` would be specified as `--host="your host here"`, or banned outputs would be `--banned-outputs="banned output 1,banned output 2"`.
+
+- `host` (default: `localhost:9159`) -- the hostname the server should listen on.
+- `token` (default: `<blank>`) -- the proxy Access Token used to restrict access to the server (feature disabled if left blank).
+- `allowed-origins` (default: `*`) -- a comma separated list of allowed origins (for the Access-Control-Allow-... (CORS) headers) (use * to permit any)
+- `banned-outputs` (default: `<blank>`) -- a comma separated list of values to redact from responses (feature disabled if left blank).
+- `banned-dests` (default: `<blank>`) -- a comma separated list of destination hosts to prevent access to (feature disabled if left blank).
+
+Each of these may be passed as command-line parameters so to apply these or deploy changes, simply change your invocation of the Proxyscotch server to your preferred command-line options and re-run proxyscotch.
