@@ -13,8 +13,8 @@ jobs:
     steps:
       - name: Install Dependencies
         run: |
-          sudo apt update
-          sudo apt install gcc libgtk-3-dev libayatana-appindicator3-dev libwebkit2gtk-4.0-dev
+          sudo apt-get update
+          sudo apt-get install libgtk-3-dev libayatana-appindicator3-dev libwebkit2gtk-4.0-dev
       - name: Checkout
         uses: actions/checkout@v2
       - name: Set up Go
