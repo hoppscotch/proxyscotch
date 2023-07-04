@@ -327,7 +327,7 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
 	responseData.Success = true
 	responseData.Status = proxyResponse.StatusCode
 	responseData.StatusText = strings.Join(strings.Split(proxyResponse.Status, " ")[1:], " ")
-	responseBytes, err := io.ReadAll(proxyResponse.Body)
+	responseBytes, _ := io.ReadAll(proxyResponse.Body)
 	responseData.Headers = headerToArray(proxyResponse.Header)
 
 	if requestData.WantsBinary {
