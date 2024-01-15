@@ -9,7 +9,7 @@ require (
 	github.com/getlantern/systray v1.2.2
 	github.com/google/uuid v1.4.0
 	github.com/martinlindhe/inputbox v0.0.0-20210326232244-b26136a79ad0
-	github.com/mccutchen/go-httpbin/v2 v2.12.0
+	github.com/mccutchen/go-httpbin/v2 v2.13.2
 	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8
 	github.com/stretchr/testify v1.8.4
 	gopkg.in/toast.v1 v1.0.0-20180812000517-0a84660828b2
