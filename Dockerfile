@@ -1,6 +1,6 @@
 FROM golang:alpine
 
-LABEL maintainer="me+proxyscotch@samjakob.com"
+LABEL maintainer="support@hoppscotch.io"
 
 WORKDIR /etc/proxyscotch
 
