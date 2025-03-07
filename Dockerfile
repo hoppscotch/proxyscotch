@@ -13,9 +13,10 @@ LABEL maintainer="support@hoppscotch.io"
 
 EXPOSE 9159/tcp
 
+COPY --from=builder --chmod=755 /etc/proxyscotch/container_run.sh /usr/bin/run_proxyscotch
 COPY --from=builder /etc/proxyscotch/out/linux-server/proxyscotch-server-linux-* /usr/bin/proxyscotch
 
 # this should be a standard user with the users group on alpine
-USER 1000:100
+# USER 1000:100
 
-CMD ["proxyscotch", "--host", "0.0.0.0:9159"]
+CMD ["run_proxyscotch"]
