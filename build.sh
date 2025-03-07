@@ -46,10 +46,40 @@ printf "\n";
 #
 
 if [ $# -lt 1 ]; then
-  printf "Usage: %s <darwin|linux|windows> [<server|desktop>]   -  Builds Proxyscotch for the given platform.\n" "$0"
-  printf "Usage: %s clean                                       -  Cleans the out/ directory.\n" "$0"
+  printf "Usage: %s <darwin|linux|windows> [<server|desktop>] [arch=<amd64|arm64>] -  Builds Proxyscotch for the given platform.\n" "$0"
+  printf "Usage: %s clean                                                            -  Cleans the out/ directory.\n" "$0"
   exit 3
 fi
+
+# Check for architecture flag
+ARCH_FLAG=""
+for arg in "$@"; do
+  case "$arg" in
+    arch=*)
+      ARCH_FLAG="${arg#arch=}"
+      ;;
+  esac
+done
+
+# Check for environment variable for architecture
+if [ -z "$ARCH_FLAG" ] && [ -n "$BUILD_ARCH" ]; then
+  ARCH_FLAG="$BUILD_ARCH"
+fi
+
+# If no architecture is specified, detect current architecture
+if [ -z "$ARCH_FLAG" ]; then
+  CURRENT_ARCH=$(uname -m)
+  if [ "$CURRENT_ARCH" = "x86_64" ]; then
+    ARCH_FLAG="amd64"
+  elif [ "$CURRENT_ARCH" = "aarch64" ] || [ "$CURRENT_ARCH" = "arm64" ]; then
+    ARCH_FLAG="arm64"
+  else
+    echo "Warning: Unsupported architecture detected: $CURRENT_ARCH, defaulting to amd64"
+    ARCH_FLAG="amd64"
+  fi
+fi
+
+echo "Using architecture: $ARCH_FLAG"
 
 #
 # COMMAND: clean
@@ -184,7 +214,7 @@ fi
 
 
 # We're running a build.
-echo "Building Proxyscotch $BUILD_TYPE v$VERSION_NAME (build $VERSION_CODE) for $PLATFORM..."
+echo "Building Proxyscotch $BUILD_TYPE v$VERSION_NAME (build $VERSION_CODE) for $PLATFORM ($ARCH_FLAG)..."
 echo "Developed by @NBTX (Apollo Software)"
 echo ""
 echo ""
@@ -203,32 +233,50 @@ if [ "$BUILD_TYPE" = "server" ]; then
 
 	if [ "$PLATFORM" = "windows" ]; then
 		GOOS="$PLATFORM" GOARCH="amd64" go build -ldflags "-X main.VersionName=$VERSION_NAME -X main.VersionCode=$VERSION_CODE" -o "$OUTPUT_DIR/proxyscotch-server.exe" server/server.go
-	  mv "$OUTPUT_DIR/proxyscotch-server.exe" "$OUTPUT_DIR/proxyscotch-server-windows-amd64-v${VERSION_NAME}.exe"
+	  
+    BINARY_PATH="$OUTPUT_DIR/proxyscotch-server-windows-amd64-v${VERSION_NAME}.exe"
+    mv "$OUTPUT_DIR/proxyscotch-server.exe" "$BINARY_PATH"
+    echo "Windows AMD64 build complete. Binary available at: $BINARY_PATH"
 
 	  GOOS="$PLATFORM" GOARCH="arm64" go build -ldflags "-X main.VersionName=$VERSION_NAME -X main.VersionCode=$VERSION_CODE" -o "$OUTPUT_DIR/proxyscotch-server.exe" server/server.go
-    mv "$OUTPUT_DIR/proxyscotch-server.exe" "$OUTPUT_DIR/proxyscotch-server-windows-arm64-v${VERSION_NAME}.exe"
+    
+    BINARY_PATH="$OUTPUT_DIR/proxyscotch-server-windows-arm64-v${VERSION_NAME}.exe"
+    mv "$OUTPUT_DIR/proxyscotch-server.exe" "$BINARY_PATH"
+    echo "Windows ARM64 build complete. Binary available at: $BINARY_PATH"
 
     # echo "Compressing release binary..."
     # WORKING_DIR=$(pwd)
     # cd "$OUTPUT_DIR" || exit 1
 	  # zip -r "proxyscotch-server-windows-v${VERSION_NAME}.zip" "proxyscotch-server-windows-v${VERSION_NAME}.exe"
 	  # cd "$WORKING_DIR" || exit 1
-	else
+
+	elif [ "$PLATFORM" = "darwin" ]; then
 		GOOS="$PLATFORM" GOARCH="amd64" go build -ldflags "-X main.VersionName=$VERSION_NAME -X main.VersionCode=$VERSION_CODE" -o "$OUTPUT_DIR/proxyscotch-server" server/server.go
-	  mv "$OUTPUT_DIR/proxyscotch-server" "$OUTPUT_DIR/proxyscotch-server-${PLATFORM}-amd64-v${VERSION_NAME}"
+	  
+    BINARY_PATH="$OUTPUT_DIR/proxyscotch-server-${PLATFORM}-amd64-v${VERSION_NAME}"
+    mv "$OUTPUT_DIR/proxyscotch-server" "$BINARY_PATH"
+    echo "macOS AMD64 build complete. Binary available at: $BINARY_PATH"
 
-    # Only run arm64 build for Darwin non-windows.
-    # TODO: Linux arm64?
-    if [ "$PLATFORM" = "darwin" ]; then
-      GOOS="$PLATFORM" GOARCH="arm64" go build -ldflags "-X main.VersionName=$VERSION_NAME -X main.VersionCode=$VERSION_CODE" -o "$OUTPUT_DIR/proxyscotch-server" server/server.go
-      mv "$OUTPUT_DIR/proxyscotch-server" "$OUTPUT_DIR/proxyscotch-server-${PLATFORM}-arm64-v${VERSION_NAME}"
-    fi
+    GOOS="$PLATFORM" GOARCH="arm64" go build -ldflags "-X main.VersionName=$VERSION_NAME -X main.VersionCode=$VERSION_CODE" -o "$OUTPUT_DIR/proxyscotch-server" server/server.go
+    
+    BINARY_PATH="$OUTPUT_DIR/proxyscotch-server-${PLATFORM}-arm64-v${VERSION_NAME}"
+    mv "$OUTPUT_DIR/proxyscotch-server" "$BINARY_PATH"
+    echo "macOS ARM64 build complete. Binary available at: $BINARY_PATH"
 
-	  # echo "Compressing release binary..."
-	  # WORKING_DIR=$(pwd)
-    # cd "$OUTPUT_DIR" || exit 1
-	  # zip -r "proxyscotch-server-${PLATFORM}-v${VERSION_NAME}.zip" "proxyscotch-server-${PLATFORM}-v${VERSION_NAME}"
-	  # cd "$WORKING_DIR" || exit 1
+	elif [ "$PLATFORM" = "linux" ]; then
+    # Always build AMD64 for Linux
+    GOOS="$PLATFORM" GOARCH="amd64" go build -ldflags "-X main.VersionName=$VERSION_NAME -X main.VersionCode=$VERSION_CODE" -o "$OUTPUT_DIR/proxyscotch-server" server/server.go
+    
+    BINARY_PATH="$OUTPUT_DIR/proxyscotch-server-${PLATFORM}-amd64-v${VERSION_NAME}"
+    mv "$OUTPUT_DIR/proxyscotch-server" "$BINARY_PATH"
+    echo "Linux AMD64 build complete. Binary available at: $BINARY_PATH"
+    
+    # Build ARM64 for Linux
+    GOOS="$PLATFORM" GOARCH="arm64" go build -ldflags "-X main.VersionName=$VERSION_NAME -X main.VersionCode=$VERSION_CODE" -o "$OUTPUT_DIR/proxyscotch-server" server/server.go
+    
+    BINARY_PATH="$OUTPUT_DIR/proxyscotch-server-${PLATFORM}-arm64-v${VERSION_NAME}"
+    mv "$OUTPUT_DIR/proxyscotch-server" "$BINARY_PATH"
+    echo "Linux ARM64 build complete. Binary available at: $BINARY_PATH"
 	fi
 	exit
 fi
@@ -285,7 +333,9 @@ if [ "$PLATFORM" = "darwin" ]; then
   rm "$OUTPUT_DIR/Proxyscotch.app/Contents/MacOS/proxyscotch-arm64"
 
   # Produce output bundles
-  mv "$OUTPUT_DIR/Proxyscotch.app" "$OUTPUT_DIR/Proxyscotch-Desktop-macOS-v${VERSION_NAME}.app"
+  BINARY_PATH="$OUTPUT_DIR/Proxyscotch-Desktop-macOS-v${VERSION_NAME}.app"
+  mv "$OUTPUT_DIR/Proxyscotch.app" "$BINARY_PATH"
+  echo "macOS Universal build complete. App bundle available at: $BINARY_PATH"
 
   # Compressing output bundles
   echo "Compressing output bundles"
@@ -315,8 +365,13 @@ elif [ "$PLATFORM" = "windows" ]; then
 
   rm "$OUTPUT_DIR/proxyscotch.manifest"
 
-  mv "$OUTPUT_DIR/proxyscotch-amd64.exe" "$OUTPUT_DIR/Proxyscotch-Desktop-Windows-amd64-v${VERSION_NAME}.exe"
-#  mv "$OUTPUT_DIR/proxyscotch-arm64.exe" "$OUTPUT_DIR/Proxyscotch-Desktop-Windows-arm64-v${VERSION_NAME}.exe"
+  BINARY_PATH="$OUTPUT_DIR/Proxyscotch-Desktop-Windows-amd64-v${VERSION_NAME}.exe"
+  mv "$OUTPUT_DIR/proxyscotch-amd64.exe" "$BINARY_PATH"
+  echo "Windows AMD64 build complete. Binary available at: $BINARY_PATH"
+  
+  BINARY_PATH="$OUTPUT_DIR/Proxyscotch-Desktop-Windows-arm64-v${VERSION_NAME}.exe"
+  mv "$OUTPUT_DIR/proxyscotch-arm64.exe" "$BINARY_PATH"
+  echo "Windows ARM64 build complete. Binary available at: $BINARY_PATH"
 
   # Compressing output bundles
   echo "Compressing output bundles"
@@ -326,9 +381,18 @@ elif [ "$PLATFORM" = "windows" ]; then
   # zip -r "Proxyscotch-Windows-v${VERSION_NAME}.zip" "Proxyscotch-Windows-v${VERSION_NAME}.exe"
   # cd "$WORKING_DIR" || exit 1
 elif [ "$PLATFORM" = "linux" ]; then
-  CGO_ENABLED=1 GOOS="linux" GOARCH="amd64" go build -ldflags "-X main.VersionName=$VERSION_NAME -X main.VersionCode=$VERSION_CODE" -o "$OUTPUT_DIR/Proxyscotch-Desktop-Linux-amd64-v${VERSION_NAME}"
-  # TODO: Linux arm64?
-#  CGO_ENABLED=1 GOOS="linux" GOARCH="arm64" CC=aarch64-linux-gnu-gcc go build -ldflags "-X main.VersionName=$VERSION_NAME -X main.VersionCode=$VERSION_CODE" -o "$OUTPUT_DIR/Proxyscotch-Desktop-Linux-arm64-v${VERSION_NAME}"
+  CGO_ENABLED=1 GOOS="linux" GOARCH="amd64" go build -ldflags "-X main.VersionName=$VERSION_NAME -X main.VersionCode=$VERSION_CODE" -o "$OUTPUT_DIR/proxyscotch-amd64"
+  
+  BINARY_PATH="$OUTPUT_DIR/Proxyscotch-Desktop-Linux-amd64-v${VERSION_NAME}"
+  mv "$OUTPUT_DIR/proxyscotch-amd64" "$BINARY_PATH"
+  echo "Linux AMD64 build complete. Binary available at: $BINARY_PATH"
+  
+  # Add ARM64 Linux build
+  CGO_ENABLED=1 GOOS="linux" GOARCH="arm64" go build -ldflags "-X main.VersionName=$VERSION_NAME -X main.VersionCode=$VERSION_CODE" -o "$OUTPUT_DIR/proxyscotch-arm64"
+  
+  BINARY_PATH="$OUTPUT_DIR/Proxyscotch-Desktop-Linux-arm64-v${VERSION_NAME}"
+  mv "$OUTPUT_DIR/proxyscotch-arm64" "$BINARY_PATH"
+  echo "Linux ARM64 build complete. Binary available at: $BINARY_PATH"
 
   # Compressing output bundles
   # echo "Compressing output bundles"
