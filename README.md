@@ -98,3 +98,38 @@ The server binary supports various options to customize your instance. Each of t
 - `banned-dests` (default: `<blank>`) -- a comma separated list of destination hosts to prevent access to (feature disabled if left blank).
 
 Each of these may be passed as command-line parameters so to apply these or deploy changes, simply change your invocation of the Proxyscotch server to your preferred command-line options and re-run proxyscotch.
+
+#### Docker Container
+The Proxyscotch server is also available as a Docker container hosted in [Docker Hub](https://hub.docker.com/r/hoppscotch/proxyscotch) and as of version 0.1.2 and above you can pass environment variables to it to configure the container.
+The container exposes the proxy through port `9159`.
+
+Environment Variables the container accepts:
+- `PROXYSCOTCH_TOKEN` (default: `<blank>`) -- the proxy Access Token used to restrict access to the server (feature disabled if left blank).
+- `PROXYSCOTCH_ALLOWED_ORIGINS` (default: `*`) -- a comma separated list of allowed origins (for the Access-Control-Allow-... (CORS) headers) (use * to permit any)
+- `PROXYSCOTCH_BANNED_OUTPUTS` (default: `<blank>`) -- a comma separated list of values to redact from responses (feature disabled if left blank).
+- `PROXYSCOTCH_BANNED_DESTS` (default: `<blank>`) -- a comma separated list of destination hosts to prevent access to (feature disabled if left blank).
+
+You can provide these values to the container as follows:
+
+- Via `docker run`:
+  ```sh
+  docker run -d \
+  -e PROXYSCOTCH_TOKEN=<token> \
+  -e PROXYSCOTCH_ALLOWED_ORIGINS=<allowed_origins> \
+  -e PROXYSCOTCH_BANNED_OUTPUTS=<banned_outputs> \
+  -e PROXYSCOTCH_BANNED_DESTS=<banned_dests> \
+  -p <host_port>:9159 \
+  hoppscotch/proxyscotch:latest
+  ```
+
+- Via `docker-commpose`:
+```yaml
+# docker-compose.yml
+
+services:
+  proxyscotch:
+    image: hoppscotch/proxyscotch:latest
+    environment:
+    ports:
+      - "<host_port>:5432"
+```

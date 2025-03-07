@@ -1,18 +1,14 @@
 #!/bin/sh
 
 # Default values
-DEFAULT_HOST="0.0.0.0:9159"
 DEFAULT_TOKEN=""
 DEFAULT_ALLOWED_ORIGINS="*"
 DEFAULT_BANNED_OUTPUTS=""
 DEFAULT_BANNED_DESTS=""
 
-# Process host
-if [ -n "${PROXYSCOTCH_HOST}" ]; then
-  HOST_ARG="--host=${PROXYSCOTCH_HOST}"
-else
-  HOST_ARG="--host=${DEFAULT_HOST}"
-fi
+# Proxyscotch container allows configurations through env variables
+# in PROXYSCOTCH_TOKEN, PROXYSCOTCH_ALLOWED_ORIGINS,
+# PROXYSCOTCH_BANNED_OUTPUTS and PROXYSCOTCH_BANNED_DESTS
 
 # Process token (only add if env var is set or default is not blank)
 TOKEN_ARG=""
