@@ -27,7 +27,8 @@ jobs:
       - name: Build Proxyscotch
         run: |
           go get -d -v
-          ./build.sh linux server
+          ./build.sh linux server arch=arm64
+          ./build.sh linux server arch=amd64
           ./build.sh linux desktop
       - name: Test Proxyscotch
         run: |
