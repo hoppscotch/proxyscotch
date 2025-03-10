@@ -29,7 +29,7 @@ jobs:
           ./build.sh linux server arch=arm64
           ./build.sh linux desktop
       - name: Upload Build Artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           # Artifact name
           # name: # optional
@@ -53,7 +53,7 @@ jobs:
           ./build.sh darwin server
           ./build.sh darwin desktop
       - name: Upload Build Artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           # Artifact name
           # name: # optional
@@ -77,7 +77,7 @@ jobs:
           ./build.sh windows server
           ./build.sh windows desktop
       - name: Upload Build Artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           # Artifact name
           # name: # optional
