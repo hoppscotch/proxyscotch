@@ -42,4 +42,4 @@ elif [ -n "${DEFAULT_BANNED_DESTS}" ]; then
 fi
 
 # Execute the command with the arguments
-./proxyscotch $HOST_ARG $TOKEN_ARG $ORIGINS_ARG $BANNED_OUTPUTS_ARG $BANNED_DESTS_ARG
+proxyscotch $HOST_ARG $TOKEN_ARG $ORIGINS_ARG $BANNED_OUTPUTS_ARG $BANNED_DESTS_ARG
