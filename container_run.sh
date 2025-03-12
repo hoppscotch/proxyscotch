@@ -10,6 +10,9 @@ DEFAULT_BANNED_DESTS=""
 # in PROXYSCOTCH_TOKEN, PROXYSCOTCH_ALLOWED_ORIGINS,
 # PROXYSCOTCH_BANNED_OUTPUTS and PROXYSCOTCH_BANNED_DESTS
 
+# This is hardcoded
+HOST_ARG="--host=0.0.0.0:9159"
+
 # Process token (only add if env var is set or default is not blank)
 TOKEN_ARG=""
 if [ -n "${PROXYSCOTCH_TOKEN}" ]; then
