@@ -3,6 +3,7 @@ module github.com/hoppscotch/proxyscotch
 go 1.18
 
 require (
+	github.com/adrg/xdg v0.4.0
 	github.com/atotto/clipboard v0.1.4
 	github.com/deckarep/gosx-notifier v0.0.0-20180201035817-e127226297fb
 	github.com/gen2brain/dlgs v0.0.0-20211108104213-bade24837f0b

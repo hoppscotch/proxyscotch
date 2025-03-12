@@ -18,6 +18,7 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/adrg/xdg"
 	"github.com/gen2brain/dlgs"
 )
 
@@ -83,7 +84,7 @@ func EnsurePrivateKeyInstalled() error {
 	if os.IsNotExist(err) {
 		encodedPEM := CreateKeyPair()
 		err = os.WriteFile(GetOrCreateDataPath()+"/cert.pem", encodedPEM[0].Bytes(), 0600)
-		
+
 		// There's no point writing the key if we failed to write the certificate, so only do that
 		// if there is no error.
 		if err == nil {
@@ -123,9 +124,15 @@ func EnsurePrivateKeyInstalled() error {
 }
 
 func GetOrCreateDataPath() string {
-	dir, _ := filepath.Abs(filepath.Dir(os.Args[0]))
+	// Backward compatibility: use the legacy data dir if it contains
+	// a cert.pem file
+	binDir, _ := filepath.Abs(filepath.Dir(os.Args[0]))
+	dataDir := filepath.Join(binDir, "data")
+	if _, err := os.Stat(filepath.Join(dataDir, "cert.pem")); err == nil {
+		return dataDir
+	}
 
-	dataDir := dir + string(os.PathSeparator) + "data"
+	dataDir = filepath.Join(xdg.DataHome, "proxyscotch")
 
 	// If the data directory stat fails because the direcotry does not exist,
 	// create the data directory.
