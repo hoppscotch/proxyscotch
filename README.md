@@ -119,7 +119,7 @@ You can provide these values to the container as follows:
   -e PROXYSCOTCH_BANNED_OUTPUTS=<banned_outputs> \
   -e PROXYSCOTCH_BANNED_DESTS=<banned_dests> \
   -p <host_port>:9159 \
-  hoppscotch/proxyscotch:v0.1.3
+  hoppscotch/proxyscotch:v0.1.4
   ```
 
 - Via `docker-commpose`:
@@ -128,7 +128,7 @@ You can provide these values to the container as follows:
 
 services:
   proxyscotch:
-    image: hoppscotch/proxyscotch:v0.1.3
+    image: hoppscotch/proxyscotch:v0.1.4
     environment:
       - PROXYSCOTCH_ALLOWED_ORIGINS=<allowed_origins>
       - PROXYSCOTCH_BANNED_OUTPUTS=<banned_outputs>
