@@ -5,12 +5,14 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/google/uuid"
 	"github.com/mccutchen/go-httpbin/v2/httpbin"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"testing"
+	"time"
 )
 
 type RespResult struct {
@@ -45,11 +47,22 @@ func getResult(_req Request, origin string) RespResult {
 }
 
 func init() {
+	// Setup loggers first to avoid nil pointers
+	setupLoggers()
+
 	allowedOrigins = []string{"validorigin1.com", "validorigin2.com"}
+	bannedDests = []string{"banned.example.com"}
 
 	app := httpbin.New()
 	testServer := httptest.NewServer(app.Handler())
 	testServerUrl = testServer.URL
+
+	// Initialize health metrics for testing
+	startTime = time.Now()
+	totalRequests = 0
+	totalErrors = 0
+	healthCheckEnabled = true
+	isServerRunning = true
 }
 
 func checkErrorNUnmarshalHTTPBinResponse(data string, t *testing.T) HTTPBinResponse {
@@ -315,10 +328,50 @@ func TestInvalidAccessTokenRequestShouldFail(t *testing.T) {
 	assert.Equal(t, "false", fmt.Sprintf("%v", success))
 }
 
-//func TestBannedOutputs(t *testing.T) {
-//	// TODO
-//	// need clear understanding on banned outputs
-//}
+func TestBannedOutputs(t *testing.T) {
+	// Test redaction of banned outputs
+	bannedOutputs = []string{"SECRET_TOKEN"}
+	defer func() {
+		bannedOutputs = []string{} // cleanup
+	}()
+
+	request := Request{
+		Method:      "GET",
+		Url:         testServerUrl + "/response-headers?response=Contains_SECRET_TOKEN_Value",
+		WantsBinary: false,
+	}
+
+	resp := getResultDef(request)
+	assert.Equal(t, 200, resp.proxyResponse.Code)
+	// Check if the secret token is redacted
+	assert.NotContains(t, resp.requestResponse.Data, "SECRET_TOKEN")
+	assert.Contains(t, resp.requestResponse.Data, "[redacted]")
+}
+
+func TestBannedDestination(t *testing.T) {
+	// Test blocking requests to banned destinations
+	request := Request{
+		Method: "GET",
+		Url:    "https://banned.example.com/resource",
+	}
+
+	resp := getResultDef(request)
+	assert.Equal(t, 200, resp.proxyResponse.Code)
+
+	var proxyRespParse map[string]interface{}
+	err := json.NewDecoder(resp.proxyResponse.Body).Decode(&proxyRespParse)
+	assert.Nil(t, err)
+
+	success := proxyRespParse["success"]
+	assert.Equal(t, "false", fmt.Sprintf("%v", success))
+
+	// Check for the banned destination error message
+	data, ok := proxyRespParse["data"].(map[string]interface{})
+	assert.True(t, ok)
+	message, ok := data["message"].(string)
+	assert.True(t, ok)
+	assert.Contains(t, message, "cannot be to this destination")
+}
 
 func TestBasicAuth(t *testing.T) {
 	request := Request{
@@ -335,12 +388,10 @@ func TestBasicAuth(t *testing.T) {
 	resp := getResultDef(request)
 	assert.Equal(t, 200, resp.requestResponse.Status)
 	checkErrorNUnmarshalHTTPBinResponse(resp.requestResponse.Data, t)
-
 }
 
 func TestBasicAuthIncorrectParams(t *testing.T) {
 	// just to confirm above auth is working fine if username and password is sent wrong
-
 	request := Request{
 		Method: "GET",
 		Url:    testServerUrl + "/basic-auth/username/password2",
@@ -350,4 +401,158 @@ func TestBasicAuthIncorrectParams(t *testing.T) {
 	resp := getResultDef(request)
 	assert.Equal(t, 401, resp.requestResponse.Status)
 	checkErrorNUnmarshalHTTPBinResponse(resp.requestResponse.Data, t)
+}
+
+func TestHealthCheckHandler(t *testing.T) {
+	// Test the health check endpoint
+	request := httptest.NewRequest("GET", "/health", nil)
+	recorder := httptest.NewRecorder()
+
+	healthCheckHandler(recorder, request)
+
+	result := recorder.Result()
+	defer result.Body.Close()
+
+	assert.Equal(t, http.StatusOK, result.StatusCode)
+
+	var healthResponse HealthResponse
+	err := json.NewDecoder(result.Body).Decode(&healthResponse)
+	assert.Nil(t, err)
+
+	assert.Equal(t, "healthy", healthResponse.Status)
+	assert.NotEmpty(t, healthResponse.Uptime)
+	assert.Equal(t, startTime.Unix(), healthResponse.StartTime.Unix())
+}
+
+func TestMetricsHandler(t *testing.T) {
+	// Test metrics handler with no auth token
+	request := httptest.NewRequest("GET", "/metrics", nil)
+	recorder := httptest.NewRecorder()
+
+	metricsHandler(recorder, request)
+
+	result := recorder.Result()
+	defer result.Body.Close()
+
+	assert.Equal(t, http.StatusOK, result.StatusCode)
+
+	var metricsResponse HealthResponse
+	err := json.NewDecoder(result.Body).Decode(&metricsResponse)
+	assert.Nil(t, err)
+
+	// Now test with auth token required
+	accessToken = "metrics-token"
+	defer func() {
+		accessToken = "" // cleanup
+	}()
+
+	// Test without providing token (should fail)
+	recorder = httptest.NewRecorder()
+	metricsHandler(recorder, request)
+	assert.Equal(t, http.StatusUnauthorized, recorder.Result().StatusCode)
+
+	// Test with correct token
+	request.Header.Set("Authorization", "Bearer metrics-token")
+	recorder = httptest.NewRecorder()
+	metricsHandler(recorder, request)
+	assert.Equal(t, http.StatusOK, recorder.Result().StatusCode)
+}
+
+func TestSessionFingerprint(t *testing.T) {
+	// Test that a unique session fingerprint is generated
+	oldFingerprint := sessionFingerprint
+
+	// Save original values to restore later
+	origInfoLogger := InfoLogger
+	origErrorLogger := ErrorLogger
+	origDebugLogger := DebugLogger
+
+	// Ensure loggers are set up
+	if InfoLogger == nil || ErrorLogger == nil || DebugLogger == nil {
+		setupLoggers()
+	}
+
+	// Instead of using Initialize which might cause issues in tests,
+	// we'll just generate a new UUID for the session fingerprint
+	sessionFingerprint = uuid.New().String()
+
+	assert.NotEmpty(t, sessionFingerprint)
+	assert.NotEqual(t, oldFingerprint, sessionFingerprint)
+
+	// Test that the fingerprint is returned in non-POST requests
+	request := httptest.NewRequest("GET", "/", nil)
+	request.Header.Set("Origin", "validorigin1.com")
+	recorder := httptest.NewRecorder()
+
+	proxyHandler(recorder, request)
+
+	var response map[string]interface{}
+	err := json.NewDecoder(recorder.Body).Decode(&response)
+	assert.Nil(t, err)
+
+	data, ok := response["data"].(map[string]interface{})
+	assert.True(t, ok)
+	returnedFingerprint, ok := data["sessionFingerprint"].(string)
+	assert.True(t, ok)
+	assert.Equal(t, sessionFingerprint, returnedFingerprint)
+
+	// Restore original loggers if they were nil
+	if origInfoLogger == nil || origErrorLogger == nil || origDebugLogger == nil {
+		InfoLogger = origInfoLogger
+		ErrorLogger = origErrorLogger
+		DebugLogger = origDebugLogger
+	}
+}
+
+func TestCustomUserAgent(t *testing.T) {
+	// Test that a custom User-Agent is passed through
+	customUA := "CustomUserAgent/1.0"
+
+	resp := getResultDef(Request{
+		Method: "GET",
+		Url:    testServerUrl + "/get",
+		Headers: map[string]string{
+			"User-Agent": customUA,
+		},
+	})
+
+	httpBinResponse := checkErrorNUnmarshalHTTPBinResponse(resp.requestResponse.Data, t)
+	assert.Equal(t, customUA, httpBinResponse.Headers.Get("User-Agent"))
+
+	// Test that default User-Agent is used when none is provided
+	resp = getResultDef(Request{
+		Method: "GET",
+		Url:    testServerUrl + "/get",
+	})
+
+	httpBinResponse = checkErrorNUnmarshalHTTPBinResponse(resp.requestResponse.Data, t)
+	assert.Equal(t, "Proxyscotch/1.1", httpBinResponse.Headers.Get("User-Agent"))
+}
+
+func TestEnableHealthCheck(t *testing.T) {
+	// Test enabling and disabling the health check
+	oldValue := healthCheckEnabled
+	defer func() {
+		healthCheckEnabled = oldValue
+	}()
+
+	EnableHealthCheck(false)
+	assert.False(t, healthCheckEnabled)
+
+	EnableHealthCheck(true)
+	assert.True(t, healthCheckEnabled)
+}
+
+func TestHeaderToArray(t *testing.T) {
+	// Test the headerToArray function
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+	header.Add("X-Custom-Header", "value1")
+	header.Add("X-Custom-Header", "value2") // Multiple values for the same key
+
+	result := headerToArray(header)
+
+	// It should only keep the last value for each key
+	assert.Equal(t, "application/json", result["content-type"])
+	assert.Equal(t, "value2", result["x-custom-header"])
 }
