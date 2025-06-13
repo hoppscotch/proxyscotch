@@ -2,6 +2,7 @@
 
 # Default values
 DEFAULT_TOKEN=""
+DEFAULT_BASE_URL="https://hoppscotch.io/"
 DEFAULT_ALLOWED_ORIGINS="*"
 DEFAULT_BANNED_OUTPUTS=""
 DEFAULT_BANNED_DESTS=""
@@ -19,6 +20,14 @@ if [ -n "${PROXYSCOTCH_TOKEN}" ]; then
   TOKEN_ARG="--token=${PROXYSCOTCH_TOKEN}"
 elif [ -n "${DEFAULT_TOKEN}" ]; then
   TOKEN_ARG="--token=${DEFAULT_TOKEN}"
+fi
+
+# Process base-url of hoppscotch instance
+BASE_URL_ARG=""
+if [ -n "${PROXYSCOTCH_BASE_URL}" ]; then
+  BASE_URL_ARG="--base-url=${PROXYSCOTCH_BASE_URL}"
+else
+  BASE_URL_ARG="--base-url=${DEFAULT_BASE_URL}"
 fi
 
 # Process allowed-origins
@@ -45,4 +54,4 @@ elif [ -n "${DEFAULT_BANNED_DESTS}" ]; then
 fi
 
 # Execute the command with the arguments
-proxyscotch $HOST_ARG $TOKEN_ARG $ORIGINS_ARG $BANNED_OUTPUTS_ARG $BANNED_DESTS_ARG
+proxyscotch $HOST_ARG $TOKEN_ARG $BASE_URL_ARG $ORIGINS_ARG $BANNED_OUTPUTS_ARG $BANNED_DESTS_ARG

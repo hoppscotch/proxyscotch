@@ -20,6 +20,7 @@ type statusChangeFunction func(status string, isListening bool)
 
 var (
 	accessToken        string
+	baseUrl            string
 	sessionFingerprint string
 	allowedOrigins     []string
 	bannedOutputs      []string
@@ -76,6 +77,7 @@ func isAllowedOrigin(origin string) bool {
 func Initialize(
 	initialAccessToken string,
 	proxyURL string,
+	initialBaseURL string,
 	initialAllowedOrigins string,
 	initialBannedOutputs string,
 	initialBannedDests string,
@@ -93,6 +95,7 @@ func Initialize(
 	}
 	allowedOrigins = strings.Split(initialAllowedOrigins, ",")
 	accessToken = initialAccessToken
+	baseUrl = initialBaseURL
 	sessionFingerprint = uuid.New().String()
 	log.Println("Starting proxy server...")
 
@@ -163,8 +166,8 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
 			return
 		}
 
-		// If it is not an allowed origin, redirect back to hoppscotch.io.
-		response.Header().Add("Location", "https://hoppscotch.io/")
+		// If it is not an allowed origin, redirect back to hoppscotch base-url.
+		response.Header().Add("Location", baseUrl)
 		response.WriteHeader(301)
 		return
 	} else {
