@@ -123,13 +123,30 @@ func isAllowedDest(dest string) bool {
 }
 
 func isAllowedOrigin(origin string) bool {
+	if len(allowedOrigins) == 0 {
+		return false
+	}
+
 	if allowedOrigins[0] == "*" {
 		return true
 	}
 
-	for _, b := range allowedOrigins {
-		if b == origin {
+	// Normalize origin
+	origin = strings.ToLower(strings.TrimSpace(origin))
+
+	for _, allowed := range allowedOrigins {
+		allowed = strings.ToLower(strings.TrimSpace(allowed))
+
+		if allowed == origin {
 			return true
+		}
+
+		// Support wildcard subdomains, e.g., *.hoppscotch.io
+		if strings.HasPrefix(allowed, "*.") {
+			base := strings.TrimPrefix(allowed, "*.")
+			if strings.HasSuffix(origin, base) {
+				return true
+			}
 		}
 	}
 
@@ -163,7 +180,21 @@ func Initialize(
 	} else {
 		bannedDests = []string{}
 	}
-	allowedOrigins = strings.Split(initialAllowedOrigins, ",")
+	// Load allowed origins from environment variable if present
+	envAllowed := os.Getenv("PROXY_ALLOWED_ORIGINS")
+
+	if envAllowed != "" {
+		allowedOrigins = strings.Split(envAllowed, ",")
+		InfoLogger.Printf("Allowed origins loaded from environment: %v", allowedOrigins)
+	} else if initialAllowedOrigins != "" {
+		allowedOrigins = strings.Split(initialAllowedOrigins, ",")
+		InfoLogger.Printf("Allowed origins loaded from argument: %v", allowedOrigins)
+	} else {
+		// Default fallback to hoppscotch.io
+		allowedOrigins = []string{"hoppscotch.io"}
+		InfoLogger.Println("No allowed origins provided; defaulting to hoppscotch.io")
+	}
+
 	accessToken = initialAccessToken
 	sessionFingerprint = uuid.New().String()
 	InfoLogger.Println("Starting proxy server...")
