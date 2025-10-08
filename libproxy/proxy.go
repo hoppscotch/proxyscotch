@@ -475,7 +475,7 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
 		r, exists := request.MultipartForm.Value[multipartRequestDataKey]
 		if !exists || len(r) == 0 {
 			atomic.AddUint64(&totalErrors, 1)
-			ErrorLogger.Printf("Invalid multipart form from %s: missing %s key", clientIP, multipartRequestDataKey)
+			ErrorLogger.Printf("Invalid multipart form from %s: missing %s key", clientIP, sanitizeLogInput(multipartRequestDataKey))
 			_, writeErr := fmt.Fprintln(response, ErrorBodyInvalidRequest)
 			if writeErr != nil {
 				ErrorLogger.Printf("Failed to write error response: %v", writeErr)
@@ -594,13 +594,13 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
 			for _, val := range request.MultipartForm.File[fileKey] {
 				f, err := val.Open()
 				if err != nil {
-					ErrorLogger.Printf("Failed to open file %s: %v", val.Filename, err)
+					ErrorLogger.Printf("Failed to open file %s: %v", sanitizeLogInput(val.Filename), err)
 					continue
 				}
 
 				field, err := writer.CreatePart(val.Header)
 				if err != nil {
-					ErrorLogger.Printf("Failed to create part for file %s: %v", val.Filename, err)
+					ErrorLogger.Printf("Failed to create part for file %s: %v", sanitizeLogInput(val.Filename), err)
 					err = f.Close()
 					if err != nil {
 						ErrorLogger.Printf("Failed to close file: %v", err)
@@ -610,12 +610,12 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
 
 				_, err = io.Copy(field, f)
 				if err != nil {
-					ErrorLogger.Printf("Failed to copy file %s: %v", val.Filename, err)
+					ErrorLogger.Printf("Failed to copy file %s: %v", sanitizeLogInput(val.Filename), err)
 				}
 
 				err = f.Close()
 				if err != nil {
-					ErrorLogger.Printf("Failed to close file %s: %v", val.Filename, err)
+					ErrorLogger.Printf("Failed to close file %s: %v", sanitizeLogInput(val.Filename), err)
 				}
 			}
 		}
