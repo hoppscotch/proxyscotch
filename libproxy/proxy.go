@@ -191,7 +191,7 @@ func Initialize(
 		InfoLogger.Printf("Allowed origins loaded from argument: %v", allowedOrigins)
 	} else {
 		// Default fallback to hoppscotch.io
-		allowedOrigins = []string{"hoppscotch.io"}
+		allowedOrigins = []string{"https://hoppscotch.io"}
 		InfoLogger.Println("No allowed origins provided; defaulting to hoppscotch.io")
 	}
 
