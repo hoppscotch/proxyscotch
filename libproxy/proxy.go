@@ -20,6 +20,13 @@ import (
 	"github.com/google/uuid"
 )
 
+// sanitizeLogInput removes potentially dangerous newline characters from user-controlled input
+func sanitizeLogInput(input string) string {
+	input = strings.ReplaceAll(input, "\n", "")
+	input = strings.ReplaceAll(input, "\r", "")
+	return input
+}
+
 // Initialize loggers
 var (
 	InfoLogger  *log.Logger
@@ -118,35 +125,58 @@ func isAllowedDest(dest string) bool {
 			return false
 		}
 	}
-
 	return true
 }
 
-func isAllowedOrigin(origin string) bool {
-	if len(allowedOrigins) == 0 {
-		return false
+// matchWildcard checks if a string matches a wildcard pattern
+// Supports patterns like "*.hoppscotch.io"
+func matchWildcard(pattern, str string) bool {
+	// If pattern doesn't contain wildcard, do exact match
+	if !strings.Contains(pattern, "*") {
+		return pattern == str
 	}
 
-	if allowedOrigins[0] == "*" {
+	// Handle wildcard patterns
+	if strings.HasPrefix(pattern, "*.") {
+		// Pattern like "*.hoppscotch.io"
+		domain := strings.TrimPrefix(pattern, "*.")
+		// Check if str ends with the domain
+		if strings.HasSuffix(str, "."+domain) {
+			return true
+		}
+		// Also match the exact domain (e.g., "hoppscotch.io" matches "*.hoppscotch.io")
+		if str == domain {
+			return true
+		}
+	} else if strings.HasSuffix(pattern, ".*") {
+		// Pattern like "https://hoppscotch.*"
+		prefix := strings.TrimSuffix(pattern, ".*")
+		if strings.HasPrefix(str, prefix) {
+			return true
+		}
+	} else if pattern == "*" {
+		// Match everything
 		return true
 	}
 
-	// Normalize origin
-	origin = strings.ToLower(strings.TrimSpace(origin))
+	return false
+}
 
-	for _, allowed := range allowedOrigins {
-		allowed = strings.ToLower(strings.TrimSpace(allowed))
+func isAllowedOrigin(origin string) bool {
+	// If first entry is wildcard "*", allow all
+	if len(allowedOrigins) > 0 && allowedOrigins[0] == "*" {
+		return true
+	}
 
-		if allowed == origin {
+	// Check each allowed origin pattern
+	for _, allowedPattern := range allowedOrigins {
+		// Try exact match first
+		if allowedPattern == origin {
 			return true
 		}
-
-		// Support wildcard subdomains, e.g., *.hoppscotch.io
-		if strings.HasPrefix(allowed, "*.") {
-			base := strings.TrimPrefix(allowed, "*.")
-			if strings.HasSuffix(origin, base) {
-				return true
-			}
+		// Try wildcard match
+		if matchWildcard(allowedPattern, origin) {
+			return true
 		}
 	}
 
@@ -175,29 +205,42 @@ func Initialize(
 	if initialBannedOutputs != "" {
 		bannedOutputs = strings.Split(initialBannedOutputs, ",")
 	}
+
 	if initialBannedDests != "" {
 		bannedDests = strings.Split(initialBannedDests, ",")
 	} else {
 		bannedDests = []string{}
 	}
-	// Load allowed origins from environment variable if present
-	envAllowed := os.Getenv("PROXY_ALLOWED_ORIGINS")
 
-	if envAllowed != "" {
-		allowedOrigins = strings.Split(envAllowed, ",")
-		InfoLogger.Printf("Allowed origins loaded from environment: %v", allowedOrigins)
+	// Read allowed origins from environment variable
+	envOrigins := os.Getenv("ALLOWED_ORIGINS")
+
+	// If environment variable is set, use it; otherwise use the parameter or default
+	if envOrigins != "" {
+		allowedOrigins = strings.Split(envOrigins, ",")
+		// Trim whitespace from each origin
+		for i := range allowedOrigins {
+			allowedOrigins[i] = strings.TrimSpace(allowedOrigins[i])
+		}
+		InfoLogger.Printf("Using allowed origins from ALLOWED_ORIGINS env: %v", allowedOrigins)
 	} else if initialAllowedOrigins != "" {
 		allowedOrigins = strings.Split(initialAllowedOrigins, ",")
-		InfoLogger.Printf("Allowed origins loaded from argument: %v", allowedOrigins)
+		// Trim whitespace from each origin
+		for i := range allowedOrigins {
+			allowedOrigins[i] = strings.TrimSpace(allowedOrigins[i])
+		}
+		InfoLogger.Printf("Using allowed origins from parameter: %v", allowedOrigins)
 	} else {
-		// Default fallback to hoppscotch.io
+		// Default to hoppscotch.io if nothing is specified
 		allowedOrigins = []string{"https://hoppscotch.io"}
-		InfoLogger.Println("No allowed origins provided; defaulting to hoppscotch.io")
+		InfoLogger.Println("Using default allowed origin: https://hoppscotch.io")
 	}
 
 	accessToken = initialAccessToken
 	sessionFingerprint = uuid.New().String()
+
 	InfoLogger.Println("Starting proxy server...")
+	InfoLogger.Printf("Allowed origins: %v", allowedOrigins)
 
 	// Register handlers
 	http.HandleFunc("/", proxyHandler)
@@ -209,17 +252,14 @@ func Initialize(
 			InfoLogger.Printf("Attempting to listen on http://%s/", proxyURL)
 			isServerRunning = true
 			httpServerError := http.ListenAndServe(proxyURL, nil)
-
 			if httpServerError != nil {
 				isServerRunning = false
 				errorMsg := fmt.Sprintf("Server failed to start: %v", httpServerError)
 				ErrorLogger.Println(errorMsg)
 				onStatusChange("An error occurred: "+httpServerError.Error(), false)
 			}
-
 			finished <- true
 		}()
-
 		onStatusChange("Listening on http://"+proxyURL+"/", true)
 		InfoLogger.Printf("Proxy server listening on http://%s/", proxyURL)
 		InfoLogger.Printf("Health check available at http://%s/health", proxyURL)
@@ -237,7 +277,6 @@ func Initialize(
 			InfoLogger.Printf("Attempting to listen on https://%s/", proxyURL)
 			isServerRunning = true
 			httpServerError := http.ListenAndServeTLS(proxyURL, GetOrCreateDataPath()+"/cert.pem", GetOrCreateDataPath()+"/key.pem", nil)
-
 			if httpServerError != nil {
 				isServerRunning = false
 				errorMsg := fmt.Sprintf("HTTPS server failed to start: %v", httpServerError)
@@ -245,7 +284,6 @@ func Initialize(
 				onStatusChange("An error occurred: "+httpServerError.Error(), false)
 			}
 		}()
-
 		onStatusChange("Listening on https://"+proxyURL+"/", true)
 		InfoLogger.Printf("Proxy server listening on https://%s/", proxyURL)
 		InfoLogger.Printf("Health check available at https://%s/health", proxyURL)
@@ -273,7 +311,7 @@ func GetHealthStatus() HealthResponse {
 		TotalRequests:    atomic.LoadUint64(&totalRequests),
 		TotalErrors:      atomic.LoadUint64(&totalErrors),
 		LastRequestTime:  lastRequestTime,
-		Version:          "1.1.0", // Update with your version
+		Version:          "1.1.0",
 		GoVersion:        runtime.Version(),
 		NumGoroutine:     runtime.NumGoroutine(),
 		MemoryAllocated:  memory.Alloc,
@@ -291,20 +329,16 @@ func getStatusString() string {
 
 // healthCheckHandler provides a simple health check endpoint
 func healthCheckHandler(w http.ResponseWriter, r *http.Request) {
-	// Record this request but don't count it in metrics
 	w.Header().Set("Content-Type", "application/json")
 
-	// Get health status
 	healthStatus := GetHealthStatus()
 
-	// Set appropriate status code
 	if healthStatus.Status == "healthy" {
 		w.WriteHeader(http.StatusOK)
 	} else {
 		w.WriteHeader(http.StatusServiceUnavailable)
 	}
 
-	// Write response
 	err := json.NewEncoder(w).Encode(healthStatus)
 	if err != nil {
 		ErrorLogger.Printf("Failed to encode health check response: %v", err)
@@ -317,10 +351,8 @@ func healthCheckHandler(w http.ResponseWriter, r *http.Request) {
 
 // metricsHandler provides detailed metrics for monitoring
 func metricsHandler(w http.ResponseWriter, r *http.Request) {
-	// Require access token for metrics endpoint
 	authHeader := r.Header.Get("Authorization")
 
-	// Check if token is provided and valid
 	if len(accessToken) > 0 && (authHeader != "Bearer "+accessToken) {
 		ErrorLogger.Printf("Unauthorized metrics access from %s", r.RemoteAddr)
 		w.WriteHeader(http.StatusUnauthorized)
@@ -328,13 +360,10 @@ func metricsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get health status which includes all metrics
 	healthStatus := GetHealthStatus()
 
-	// Return detailed metrics
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-
 	err := json.NewEncoder(w).Encode(healthStatus)
 	if err != nil {
 		ErrorLogger.Printf("Failed to encode metrics response: %v", err)
@@ -347,30 +376,29 @@ func metricsHandler(w http.ResponseWriter, r *http.Request) {
 
 const ErrorBodyInvalidRequest = "{\"success\": false, \"data\":{\"message\":\"(Proxy Error) Invalid request.\"}}"
 const ErrorBodyProxyRequestFailed = "{\"success\": false, \"data\":{\"message\":\"(Proxy Error) Request failed.\"}}"
-const maxMemory = int64(32 << 20) // multipartRequestDataKey currently its 32 MB
+const maxMemory = int64(32 << 20)
 
 func proxyHandler(response http.ResponseWriter, request *http.Request) {
-	// Update request metrics
 	atomic.AddUint64(&totalRequests, 1)
 	lastRequestTime = time.Now()
-
 	startTime := time.Now()
 	clientIP := request.RemoteAddr
 	method := request.Method
 	requestURL := request.URL.String()
 	userAgent := request.Header.Get("User-Agent")
 
-	// Log incoming request
-	InfoLogger.Printf("Received %s request from %s for %s (User-Agent: %s)", method, clientIP, requestURL, userAgent)
+	// Sanitize user-controlled input before logging
+	safeRequestURL := sanitizeLogInput(requestURL)
+	safeUserAgent := sanitizeLogInput(userAgent)
 
-	// Skip processing for health check and metrics paths if they come through here
+	InfoLogger.Printf("Received %s request from %s for %s (User-Agent: %s)", method, clientIP, safeRequestURL, safeUserAgent)
+
 	if request.URL.Path == "/health" || request.URL.Path == "/metrics" {
 		return
 	}
 
-	// We want to allow all types of requests to the proxy, though we only want to allow certain
-	// origins.
 	response.Header().Add("Access-Control-Allow-Headers", "*")
+
 	if request.Method == "OPTIONS" {
 		response.Header().Add("Access-Control-Allow-Origin", "*")
 		response.WriteHeader(200)
@@ -389,22 +417,21 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
 			if err != nil {
 				ErrorLogger.Printf("Failed to write error response: %v", err)
 			}
-			ErrorLogger.Printf("Denied access to %s from disallowed origin: %s", clientIP, origin)
+			ErrorLogger.Printf("Denied access to %s from disallowed origin: %s", clientIP, sanitizeLogInput(origin))
 			return
 		}
-		// If it is not an allowed origin, redirect back to hoppscotch.io.
+
 		response.Header().Add("Location", "https://hoppscotch.io/")
 		response.WriteHeader(301)
-		InfoLogger.Printf("Redirected request from %s with disallowed origin: %s", clientIP, origin)
+		InfoLogger.Printf("Redirected request from %s with disallowed origin: %s", clientIP, sanitizeLogInput(origin))
 		return
 	} else {
-		// Otherwise set the appropriate CORS policy and continue.
 		response.Header().Add("Access-Control-Allow-Origin", origin)
-		DebugLogger.Printf("Allowed request from origin: %s", origin)
+		DebugLogger.Printf("Allowed request from origin: %s", sanitizeLogInput(origin))
 	}
 
-	// For anything other than an POST request, we'll return an empty JSON object.
 	response.Header().Add("Content-Type", "application/json; charset=utf-8")
+
 	if request.Method != "POST" {
 		_, err := fmt.Fprintln(response, "{\"success\": true, \"data\":{\"sessionFingerprint\":\""+sessionFingerprint+"\", \"isProtected\":"+strconv.FormatBool(len(accessToken) > 0)+"}}")
 		if err != nil {
@@ -415,7 +442,6 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	// Attempt to parse request body.
 	var requestData Request
 	isMultipart := strings.HasPrefix(request.Header.Get("content-type"), "multipart/form-data")
 	var multipartRequestDataKey = request.Header.Get("multipart-part-key")
@@ -481,8 +507,8 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
 		}
 	}
 
-	// Log the proxied request details
-	InfoLogger.Printf("Proxying %s request from %s to %s", requestData.Method, clientIP, requestData.Url)
+	// Log the proxied request details with sanitized input
+	InfoLogger.Printf("Proxying %s request from %s to %s", sanitizeLogInput(requestData.Method), clientIP, sanitizeLogInput(requestData.Url))
 
 	if len(accessToken) > 0 && requestData.AccessToken != accessToken {
 		atomic.AddUint64(&totalErrors, 1)
@@ -494,12 +520,10 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	// Make the request
 	var proxyRequest http.Request
 	proxyRequest.Header = make(http.Header)
 	proxyRequest.Method = requestData.Method
 
-	// Parse URL and check for errors
 	parsedURL, err := url.Parse(requestData.Url)
 	if err != nil {
 		atomic.AddUint64(&totalErrors, 1)
@@ -512,7 +536,6 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
 	}
 	proxyRequest.URL = parsedURL
 
-	// Block requests to illegal destinations
 	if !isAllowedDest(proxyRequest.URL.Hostname()) {
 		atomic.AddUint64(&totalErrors, 1)
 		ErrorLogger.Printf("Request to banned destination %s from %s", proxyRequest.URL.Hostname(), clientIP)
@@ -524,7 +547,6 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
 	}
 
 	var params = proxyRequest.URL.Query()
-
 	for k, v := range requestData.Params {
 		params.Set(k, v)
 	}
@@ -532,19 +554,17 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
 
 	if len(requestData.Auth.Username) > 0 && len(requestData.Auth.Password) > 0 {
 		proxyRequest.SetBasicAuth(requestData.Auth.Username, requestData.Auth.Password)
-		DebugLogger.Printf("Using basic auth for request to %s", proxyRequest.URL.String())
+		DebugLogger.Printf("Using basic auth for request to %s", sanitizeLogInput(proxyRequest.URL.String()))
 	}
 
 	for k, v := range requestData.Headers {
 		proxyRequest.Header.Set(k, v)
 	}
 
-	// Add proxy headers.
 	proxyRequest.Header.Set("X-Forwarded-For", request.RemoteAddr)
 	proxyRequest.Header.Set("Via", "Proxyscotch/1.1")
 
 	if len(strings.TrimSpace(proxyRequest.Header.Get("User-Agent"))) < 1 {
-		// If there is no valid user agent specified at all, *then* use the default.
 		proxyRequest.Header.Set("User-Agent", "Proxyscotch/1.1")
 	}
 
@@ -552,7 +572,6 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
 		body := &bytes.Buffer{}
 		writer := multipart.NewWriter(body)
 
-		// Process form fields
 		for key := range request.MultipartForm.Value {
 			if key == multipartRequestDataKey {
 				continue
@@ -571,7 +590,6 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
 			}
 		}
 
-		// Process files
 		for fileKey := range request.MultipartForm.File {
 			for _, val := range request.MultipartForm.File[fileKey] {
 				f, err := val.Open()
@@ -595,7 +613,6 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
 					ErrorLogger.Printf("Failed to copy file %s: %v", val.Filename, err)
 				}
 
-				// Close file
 				err = f.Close()
 				if err != nil {
 					ErrorLogger.Printf("Failed to close file %s: %v", val.Filename, err)
@@ -623,19 +640,17 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
 		proxyRequest.ContentLength = int64(len(requestData.Data))
 	}
 
-	// Create client with timeout
 	var client = &http.Client{
 		Timeout: 30 * time.Second,
 	}
 
-	DebugLogger.Printf("Sending proxied request to %s", proxyRequest.URL.String())
+	DebugLogger.Printf("Sending proxied request to %s", sanitizeLogInput(proxyRequest.URL.String()))
 	proxyStartTime := time.Now()
 
-	// Send request to target server
 	proxyResponse, err := client.Do(&proxyRequest)
 	if err != nil {
 		atomic.AddUint64(&totalErrors, 1)
-		ErrorLogger.Printf("Failed to execute proxied request to %s: %v", proxyRequest.URL.String(), err)
+		ErrorLogger.Printf("Failed to execute proxied request to %s: %v", sanitizeLogInput(proxyRequest.URL.String()), err)
 		_, writeErr := fmt.Fprintln(response, "{\"success\": false, \"data\":{\"message\":\"(Proxy Error) Request failed: "+err.Error()+"\"}}")
 		if writeErr != nil {
 			ErrorLogger.Printf("Failed to write error response: %v", writeErr)
@@ -643,7 +658,6 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	// Ensure body is closed after use
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
 		if err != nil {
@@ -651,18 +665,13 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
 		}
 	}(proxyResponse.Body)
 
-	InfoLogger.Printf("Received response from %s with status %d in %v",
-		proxyRequest.URL.String(),
-		proxyResponse.StatusCode,
-		time.Since(proxyStartTime))
+	InfoLogger.Printf("Received response from %s with status %d in %v", sanitizeLogInput(proxyRequest.URL.String()), proxyResponse.StatusCode, time.Since(proxyStartTime))
 
-	// Build response data
 	var responseData Response
 	responseData.Success = true
 	responseData.Status = proxyResponse.StatusCode
 	responseData.StatusText = strings.Join(strings.Split(proxyResponse.Status, " ")[1:], " ")
 
-	// Read response body
 	responseBytes, err := io.ReadAll(proxyResponse.Body)
 	if err != nil {
 		atomic.AddUint64(&totalErrors, 1)
@@ -677,27 +686,20 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
 	responseData.Headers = headerToArray(proxyResponse.Header)
 
 	if requestData.WantsBinary {
-		// Redact banned outputs
 		for _, bannedOutput := range bannedOutputs {
 			responseBytes = bytes.ReplaceAll(responseBytes, []byte(bannedOutput), []byte("[redacted]"))
 		}
-
-		// Encode binary response
 		responseData.Data = base64.RawStdEncoding.EncodeToString(responseBytes)
 		responseData.IsBinary = true
 		DebugLogger.Printf("Returning binary response of %d bytes", len(responseBytes))
 	} else {
-		// Return as string
 		responseData.Data = string(responseBytes)
-
-		// Redact banned outputs
 		for _, bannedOutput := range bannedOutputs {
 			responseData.Data = strings.Replace(responseData.Data, bannedOutput, "[redacted]", -1)
 		}
 		DebugLogger.Printf("Returning text response of %d bytes", len(responseData.Data))
 	}
 
-	// Write the response
 	err = json.NewEncoder(response).Encode(responseData)
 	if err != nil {
 		atomic.AddUint64(&totalErrors, 1)
@@ -709,12 +711,8 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	// Log completion
-	InfoLogger.Printf("Completed %s request from %s to %s in %v",
-		requestData.Method,
-		clientIP,
-		requestData.Url,
-		time.Since(startTime))
+	// Log completion with sanitized user input
+	InfoLogger.Printf("Completed %s request from %s to %s in %v", sanitizeLogInput(requestData.Method), clientIP, sanitizeLogInput(requestData.Url), time.Since(startTime))
 }
 
 // EnableHealthCheck turns on or off the health check functionality
@@ -723,16 +721,12 @@ func EnableHealthCheck(enable bool) {
 	InfoLogger.Printf("Health check endpoint %s", map[bool]string{true: "enabled", false: "disabled"}[enable])
 }
 
-// Converts http.Header to a map.
-// Original Source: https://stackoverflow.com/a/37030039/2872279 (modified).
 func headerToArray(header http.Header) (res map[string]string) {
 	res = make(map[string]string)
-
 	for name, values := range header {
 		for _, value := range values {
 			res[strings.ToLower(name)] = value
 		}
 	}
-
 	return res
 }
