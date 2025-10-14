@@ -213,7 +213,7 @@ func Initialize(
 	}
 
 	// Read allowed origins from environment variable
-	envOrigins := os.Getenv("ALLOWED_ORIGINS")
+	envOrigins := os.Getenv("PROXYSCOTCH_ALLOWED_ORIGINS")
 
 	// If environment variable is set, use it; otherwise use the parameter or default
 	if envOrigins != "" {
