@@ -213,7 +213,7 @@ func Initialize(
 	}
 
 	// Read allowed origins from environment variable
-	envOrigins := os.Getenv("ALLOWED_ORIGINS")
+	envOrigins := os.Getenv("PROXYSCOTCH_ALLOWED_ORIGINS")
 
 	// If environment variable is set, use it; otherwise use the parameter or default
 	if envOrigins != "" {
@@ -520,6 +520,17 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	// Validate URL is not empty
+	if len(strings.TrimSpace(requestData.Url)) == 0 {
+		atomic.AddUint64(&totalErrors, 1)
+		ErrorLogger.Printf("Empty URL from %s", clientIP)
+		_, writeErr := fmt.Fprintln(response, "{\"success\": false, \"data\":{\"message\":\"(Proxy Error) URL cannot be empty\"}}")
+		if writeErr != nil {
+			ErrorLogger.Printf("Failed to write error response: %v", writeErr)
+		}
+		return
+	}
+
 	var proxyRequest http.Request
 	proxyRequest.Header = make(http.Header)
 	proxyRequest.Method = requestData.Method
@@ -534,6 +545,18 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
 		}
 		return
 	}
+
+	// Additional safety check for nil URL
+	if parsedURL == nil {
+		atomic.AddUint64(&totalErrors, 1)
+		ErrorLogger.Printf("Parsed URL is nil from %s", clientIP)
+		_, writeErr := fmt.Fprintln(response, "{\"success\": false, \"data\":{\"message\":\"(Proxy Error) Invalid URL: URL is nil\"}}")
+		if writeErr != nil {
+			ErrorLogger.Printf("Failed to write error response: %v", writeErr)
+		}
+		return
+	}
+
 	proxyRequest.URL = parsedURL
 
 	if !isAllowedDest(proxyRequest.URL.Hostname()) {
@@ -594,13 +617,13 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
 			for _, val := range request.MultipartForm.File[fileKey] {
 				f, err := val.Open()
 				if err != nil {
-					ErrorLogger.Printf("Failed to open file %s: %v", sanitizeLogInput(val.Filename), err)
+					ErrorLogger.Printf("Failed to open file %s: %v", val.Filename, err)
 					continue
 				}
 
 				field, err := writer.CreatePart(val.Header)
 				if err != nil {
-					ErrorLogger.Printf("Failed to create part for file %s: %v", sanitizeLogInput(val.Filename), err)
+					ErrorLogger.Printf("Failed to create part for file %s: %v", val.Filename, err)
 					err = f.Close()
 					if err != nil {
 						ErrorLogger.Printf("Failed to close file: %v", err)
@@ -610,12 +633,12 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
 
 				_, err = io.Copy(field, f)
 				if err != nil {
-					ErrorLogger.Printf("Failed to copy file %s: %v", sanitizeLogInput(val.Filename), err)
+					ErrorLogger.Printf("Failed to copy file %s: %v", val.Filename, err)
 				}
 
 				err = f.Close()
 				if err != nil {
-					ErrorLogger.Printf("Failed to close file %s: %v", sanitizeLogInput(val.Filename), err)
+					ErrorLogger.Printf("Failed to close file %s: %v", val.Filename, err)
 				}
 			}
 		}
