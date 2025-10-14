@@ -6,7 +6,11 @@ DEFAULT_ALLOWED_ORIGINS="*"
 DEFAULT_BANNED_OUTPUTS=""
 DEFAULT_BANNED_DESTS=""
 
-# Read PORT from Cloud Run environment or default to 9159
+# Proxyscotch container allows configurations through env variables
+# in PROXYSCOTCH_TOKEN, PROXYSCOTCH_ALLOWED_ORIGINS,
+# PROXYSCOTCH_BANNED_OUTPUTS and PROXYSCOTCH_BANNED_DESTS
+# This script reads these env variables and constructs the command line arguments accordingly.
+# Read PORT from environment or default to 9159
 PORT="${PORT:-9159}"
 HOST_ARG="--host=0.0.0.0:${PORT}"
 
