@@ -10,9 +10,12 @@ DEFAULT_BANNED_DESTS=""
 # Proxyscotch container allows configurations through env variables
 # in PROXYSCOTCH_TOKEN, PROXYSCOTCH_ALLOWED_ORIGINS,
 # PROXYSCOTCH_BANNED_OUTPUTS and PROXYSCOTCH_BANNED_DESTS
+# This script reads these env variables and constructs the command line arguments accordingly.
+# Read PORT from environment or default to 9159
+PORT="${PORT:-9159}"
+HOST_ARG="--host=0.0.0.0:${PORT}"
 
-# This is hardcoded
-HOST_ARG="--host=0.0.0.0:9159"
+echo "Starting Proxyscotch on port ${PORT}"
 
 # Process token (only add if env var is set or default is not blank)
 TOKEN_ARG=""
@@ -30,8 +33,10 @@ else
   BASE_URL_ARG="--base-url=${DEFAULT_BASE_URL}"
 fi
 
-# Process allowed-origins
-if [ -n "${PROXYSCOTCH_ALLOWED_ORIGINS}" ]; then
+# Process allowed-origins - Support both ALLOWED_ORIGINS and PROXYSCOTCH_ALLOWED_ORIGINS
+if [ -n "${ALLOWED_ORIGINS}" ]; then
+  ORIGINS_ARG="--allowed-origins=${ALLOWED_ORIGINS}"
+elif [ -n "${PROXYSCOTCH_ALLOWED_ORIGINS}" ]; then
   ORIGINS_ARG="--allowed-origins=${PROXYSCOTCH_ALLOWED_ORIGINS}"
 else
   ORIGINS_ARG="--allowed-origins=${DEFAULT_ALLOWED_ORIGINS}"
