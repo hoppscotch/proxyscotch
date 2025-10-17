@@ -48,6 +48,7 @@ type statusChangeFunction func(status string, isListening bool)
 
 var (
 	accessToken        string
+	baseUrl            string
 	sessionFingerprint string
 	allowedOrigins     []string
 	bannedOutputs      []string
@@ -186,6 +187,7 @@ func isAllowedOrigin(origin string) bool {
 func Initialize(
 	initialAccessToken string,
 	proxyURL string,
+	initialBaseURL string,
 	initialAllowedOrigins string,
 	initialBannedOutputs string,
 	initialBannedDests string,
@@ -237,6 +239,7 @@ func Initialize(
 	}
 
 	accessToken = initialAccessToken
+	baseUrl = initialBaseURL
 	sessionFingerprint = uuid.New().String()
 
 	InfoLogger.Println("Starting proxy server...")
@@ -421,7 +424,7 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
 			return
 		}
 
-		response.Header().Add("Location", "https://hoppscotch.io/")
+		response.Header().Add("Location", baseUrl)
 		response.WriteHeader(301)
 		InfoLogger.Printf("Redirected request from %s with disallowed origin: %s", clientIP, sanitizeLogInput(origin))
 		return

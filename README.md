@@ -93,6 +93,7 @@ The server binary supports various options to customize your instance. Each of t
 
 - `host` (default: `localhost:9159`) -- the hostname the server should listen on.
 - `token` (default: `<blank>`) -- the proxy Access Token used to restrict access to the server (feature disabled if left blank).
+- `base-url` (default: `https://hoppscotch.io/`) -- the url of the hoppscotch instance (if the request origin is not an allowed origin, there is a redirect to hoppscotch base-url).
 - `allowed-origins` (default: `*`) -- a comma separated list of allowed origins (for the Access-Control-Allow-... (CORS) headers) (use * to permit any)
 - `banned-outputs` (default: `<blank>`) -- a comma separated list of values to redact from responses (feature disabled if left blank).
 - `banned-dests` (default: `<blank>`) -- a comma separated list of destination hosts to prevent access to (feature disabled if left blank).
@@ -105,6 +106,7 @@ The container exposes the proxy through port `9159`.
 
 Environment Variables the container accepts:
 - `PROXYSCOTCH_TOKEN` (default: `<blank>`) -- the proxy Access Token used to restrict access to the server (feature disabled if left blank).
+- `PROXYSCOTCH_BASE_URL` (default: `https://hoppscotch.io/`) -- the url of the hoppscotch instance (if the request origin is not an allowed origin, there is a redirect to hoppscotch base-url)
 - `PROXYSCOTCH_ALLOWED_ORIGINS` (default: `*`) -- a comma separated list of allowed origins (for the Access-Control-Allow-... (CORS) headers) (use * to permit any)
 - `PROXYSCOTCH_BANNED_OUTPUTS` (default: `<blank>`) -- a comma separated list of values to redact from responses (feature disabled if left blank).
 - `PROXYSCOTCH_BANNED_DESTS` (default: `<blank>`) -- a comma separated list of destination hosts to prevent access to (feature disabled if left blank).
@@ -115,6 +117,7 @@ You can provide these values to the container as follows:
   ```sh
   docker run -d \
   -e PROXYSCOTCH_TOKEN=<token> \
+  -e PROXYSCOTCH_BASE_URL=<base_url> \
   -e PROXYSCOTCH_ALLOWED_ORIGINS=<allowed_origins> \
   -e PROXYSCOTCH_BANNED_OUTPUTS=<banned_outputs> \
   -e PROXYSCOTCH_BANNED_DESTS=<banned_dests> \
@@ -122,7 +125,7 @@ You can provide these values to the container as follows:
   hoppscotch/proxyscotch:v0.1.4
   ```
 
-- Via `docker-commpose`:
+- Via `docker-compose`:
 ```yaml
 # docker-compose.yml
 
