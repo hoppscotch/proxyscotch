@@ -109,6 +109,20 @@ func TestWildCardOrigin(t *testing.T) {
 	assert.Equal(t, 200, result.proxyResponse.Code)
 }
 
+func TestWildCardOriginAllowsEmptyOrigin(t *testing.T) {
+	_allowedOrigins := allowedOrigins
+	allowedOrigins = []string{"*"}
+	defer func() {
+		allowedOrigins = _allowedOrigins
+	}()
+	result := getResult(Request{
+		Method: "GET",
+		Url:    testServerUrl + "/get",
+	}, "")
+	// wildcard should permit an empty origin (e.g. desktop clients)
+	assert.Equal(t, 200, result.proxyResponse.Code)
+}
+
 func TestUrlParamsInUrl(t *testing.T) {
 	resp := getResultDef(Request{
 		Method: "GET",
