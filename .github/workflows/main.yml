@@ -19,9 +19,9 @@ jobs:
       - name: Unshallow
         run: git fetch --prune --unshallow
       - name: Set up Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v7
         with:
-          go-version: 1.18
+          go-version: '1.23.7'
       - name: Run Builds
         run: |
           rm -rf ./out
@@ -44,9 +44,9 @@ jobs:
       - name: Unshallow
         run: git fetch --prune --unshallow
       - name: Set up Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v7
         with:
-          go-version: 1.18
+          go-version: '1.23.7'
       - name: Run Builds
         run: |
           rm -rf ./out
@@ -68,9 +68,9 @@ jobs:
       - name: Unshallow
         run: git fetch --prune --unshallow
       - name: Set up Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v7
         with:
-          go-version: 1.18
+          go-version: '1.23.7'
       - name: Run Builds
         run: |
           rm -rf ./out

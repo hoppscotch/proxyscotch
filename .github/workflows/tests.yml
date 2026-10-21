@@ -18,9 +18,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Set up Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v7
         with:
-          go-version: 1.18
+          go-version: '1.23.7'
       # Run a build but don't do anything with the artifacts.
       # i.e., don't sign them or anything.
       # This is just to check that a build would run correctly for release.
@@ -41,9 +41,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Set up Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v7
         with:
-          go-version: 1.18
+          go-version: '1.23.7'
       # Run a build but don't do anything with the artifacts.
       # i.e., don't sign them or anything.
       # This is just to check that a build would run correctly for release.
@@ -65,9 +65,9 @@ jobs:
       - name: Unshallow
         run: git fetch --prune --unshallow
       - name: Set up Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v7
         with:
-          go-version: 1.18
+          go-version: '1.23.7'
       # Run a build but don't do anything with the artifacts.
       # i.e., don't sign them or anything.
       # This is just to check that a build would run correctly for release.
