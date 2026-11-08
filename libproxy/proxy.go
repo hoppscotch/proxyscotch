@@ -407,7 +407,7 @@ func proxyHandler(response http.ResponseWriter, request *http.Request) {
 	}
 
 	origin := request.Header.Get("Origin")
-	if origin == "" || !isAllowedOrigin(origin) {
+	if !isAllowedOrigin(origin) {
 		atomic.AddUint64(&totalErrors, 1)
 		if strings.HasPrefix(request.Header.Get("Content-Type"), "application/json") {
 			response.Header().Add("Access-Control-Allow-Headers", "*")
