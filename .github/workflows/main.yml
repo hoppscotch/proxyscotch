@@ -13,7 +13,7 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt update
-          sudo apt install gcc libgtk-3-dev libappindicator3-dev libwebkit2gtk-4.0-dev libayatana-appindicator3-dev
+          sudo apt install -y gcc libgtk-3-dev libwebkit2gtk-4.0-dev libayatana-appindicator3-dev
       - name: Checkout
         uses: actions/checkout@v2
       - name: Unshallow
@@ -24,16 +24,20 @@ jobs:
           go-version: '1.23.7'
       - name: Run Builds
         run: |
-          rm -rf ./out
+          rm -rf ./out ./dist
+          mkdir ./dist
           ./build.sh linux server arch=amd64
+          mv out/linux-server/proxyscotch-server-* dist/
           ./build.sh linux server arch=arm64
-          ./build.sh linux desktop
+          mv out/linux-server/proxyscotch-server-* dist/
+          ./build.sh linux desktop arch=amd64
+          mv out/linux-desktop/Proxyscotch-Desktop-* dist/
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
         with:
-          # Artifact name
-          # name: # optional
-          path: ./out/**/*
+          name: build-linux
+          path: ./dist/*
+          if-no-files-found: error
 
   build-darwin:
     name: Darwin Build
@@ -49,15 +53,20 @@ jobs:
           go-version: '1.23.7'
       - name: Run Builds
         run: |
-          rm -rf ./out
-          ./build.sh darwin server
-          ./build.sh darwin desktop
+          rm -rf ./out ./dist
+          mkdir ./dist
+          ./build.sh darwin server arch=amd64
+          mv out/darwin-server/proxyscotch-server-* dist/
+          ./build.sh darwin server arch=arm64
+          mv out/darwin-server/proxyscotch-server-* dist/
+          ./build.sh darwin desktop arch=universal
+          mv out/darwin-desktop/Proxyscotch-Desktop-*.zip dist/
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
         with:
-          # Artifact name
-          # name: # optional
-          path: ./out/**/*
+          name: build-darwin
+          path: ./dist/*
+          if-no-files-found: error
 
   build-windows:
     name: Windows Build
@@ -73,86 +82,55 @@ jobs:
           go-version: '1.23.7'
       - name: Run Builds
         run: |
-          rm -rf ./out
-          ./build.sh windows server
-          ./build.sh windows desktop
+          rm -rf ./out ./dist
+          mkdir ./dist
+          ./build.sh windows server arch=amd64
+          mv out/windows-server/proxyscotch-server-* dist/
+          ./build.sh windows server arch=arm64
+          mv out/windows-server/proxyscotch-server-* dist/
+          ./build.sh windows desktop arch=amd64
+          mv out/windows-desktop/Proxyscotch-Desktop-*.exe dist/
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
         with:
-          # Artifact name
-          # name: # optional
-          path: ./out/**/*
+          name: build-windows
+          path: ./dist/*
+          if-no-files-found: error
 
   generate-release:
     name: Execute Release
     runs-on: ubuntu-latest
     needs: [build-linux, build-darwin, build-windows]
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Unshallow
-        run: git fetch --prune --unshallow
-      - name: Prepare Release Directory
-        run: mkdir ./release
-      - name: Download a Build Artifact
-        uses: actions/download-artifact@v2
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
         with:
-          # Destination path
-          path: ./release # optional
+          pattern: build-*
+          merge-multiple: true
+          path: ./release
       - name: Load version information
         run: |
           source ./version.properties
-          echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV 
+          echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
           echo "VERSION_CODE=$VERSION_CODE" >> $GITHUB_ENV
-#          echo "::set-env name=VERSION_NAME::$VERSION_NAME"
-#          echo "::set-env name=VERSION_CODE::$VERSION_CODE"
-      - name: Display structure of downloaded files
+      # Version-free copies keep releases/latest/download/<name> links stable across releases.
+      - name: Add version-free copies
         working-directory: ./release
         run: |
-          ls -R
-      - name: Create a Release
-        id: create_release
-        uses: actions/create-release@v1
+          for f in *-v"$VERSION_NAME"*; do
+            cp "$f" "${f/-v$VERSION_NAME/}"
+          done
+          ls -l
+      - name: Create Release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          # The name of the tag. This should come from the webhook payload, `github.GITHUB_REF` when a user pushes a new tag
-          tag_name: "v${{ env.VERSION_NAME }}"
-          # The name of the release. For example, `Release v1.0.1`
-          release_name: "Release v${{ env.VERSION_NAME }}"
-          # Text describing the contents of the tag.
-          body: ""
-          draft: false
-          prerelease: false
-      - name: Upload Windows Release Assets
-        id: upload_release_assets_windows
-        uses: NBTX/upload-release-assets@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          targets: "./release/artifact/windows-*/*.exe"
-      - name: Upload Linux Release Assets
-        id: upload_release_assets_linux
-        uses: NBTX/upload-release-assets@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          targets: "./release/artifact/linux-*/*.!(md)"
-      - name: Upload macOS Server Release Assets
-        id: upload_release_assets_darwin_server
-        uses: NBTX/upload-release-assets@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          targets: "./release/artifact/darwin-server/*.!(md)"
-      - name: Upload macOS Desktop Release Assets
-        id: upload_release_assets_darwin
-        uses: NBTX/upload-release-assets@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          targets: "./release/artifact/darwin-*/*.zip"
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh release create "v$VERSION_NAME" ./release/* \
+            --verify-tag \
+            --title "Release v$VERSION_NAME" \
+            --notes ""
